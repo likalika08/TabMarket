@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О компании TabMarket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+        body { background:#fff; color:#333; }
+        .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+        
+        /* Шапка */
+        header { background:white; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:15px 0; flex-wrap:wrap; }
+        .logo a { font-size:24px; font-weight:600; color:#1A2B4C; text-decoration:none; }
+        .logo span { color:#0066CC; }
+        nav ul { display:flex; list-style:none; gap:20px; flex-wrap:wrap; }
+        nav a { text-decoration:none; color:#333; font-weight:500; }
+        nav a:hover, nav a.active { color:#0066CC; }
+        .user-actions { display:flex; gap:15px; align-items:center; }
+        .user-actions a { color:#333; text-decoration:none; font-size:18px; position:relative; }
+        .cart-count, .wishlist-count { background:#0066CC; color:white; border-radius:50%; padding:2px 6px; font-size:11px; position:absolute; top:-8px; right:-10px; }
+        
+        /* Хлебные крошки */
+        .breadcrumbs { margin:20px 0; color:#777; font-size:14px; }
+        .breadcrumbs a { color:#0066CC; text-decoration:none; }
+        
+        /* Заголовок страницы */
+        .page-title { font-size:36px; color:#1A2B4C; margin:30px 0 40px; padding-bottom:15px; border-bottom:3px solid #0066CC; width:fit-content; }
+        
+        /* Hero секция */
+        .about-hero {
+            background:linear-gradient(135deg, #f5f7fa, #e9ecf5);
+            border-radius:20px; padding:60px; margin-bottom:60px;
+            display:flex; align-items:center; gap:40px; flex-wrap:wrap;
+        }
+        .about-hero-text { flex:1; }
+        .about-hero-text h2 { font-size:42px; color:#1A2B4C; margin-bottom:20px; }
+        .about-hero-text p { font-size:18px; color:#555; line-height:1.6; margin-bottom:20px; }
+        .about-hero-image { flex:1; text-align:center; }
+        .about-hero-image img { max-width:100%; border-radius:20px; box-shadow:0 20px 30px rgba(0,0,0,0.1); }
+        
+        /* Наши преимущества */
+        .advantages-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:30px;
+            margin-bottom:60px;
+        }
+        .advantage-card {
+            background:#f8f9fc; border-radius:20px; padding:30px; text-align:center;
+            border:1px solid #eef2f7; transition:0.3s;
+        }
+        .advantage-card:hover { transform:translateY(-5px); box-shadow:0 15px 30px rgba(0,102,204,0.1); }
+        .advantage-icon {
+            width:80px; height:80px; background:#e0ebff; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; margin:0 auto 20px;
+        }
+        .advantage-icon i { font-size:36px; color:#0066CC; }
+        .advantage-card h3 { font-size:20px; color:#1A2B4C; margin-bottom:15px; }
+        .advantage-card p { color:#666; line-height:1.6; }
+        
+        /* История компании */
+        .history-section {
+            display:flex; gap:40px; margin-bottom:60px; align-items:center; flex-wrap:wrap;
+        }
+        .history-text { flex:1; }
+        .history-text h3 { font-size:28px; color:#1A2B4C; margin-bottom:20px; }
+        .history-text p { color:#555; line-height:1.8; margin-bottom:15px; }
+        .history-stats {
+            display:flex; gap:30px; margin-top:30px; flex-wrap:wrap;
+        }
+        .stat-item { text-align:center; }
+        .stat-number {
+            font-size:36px; font-weight:700; color:#0066CC; display:block;
+        }
+        .stat-label { color:#666; font-size:14px; }
+        .history-image { flex:1; text-align:center; }
+        .history-image img { max-width:100%; border-radius:20px; }
+        
+        /* Команда */
+        .team-section { margin-bottom:60px; }
+        .team-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:30px;
+        }
+        .team-card {
+            background:#f8f9fc; border-radius:20px; padding:25px; text-align:center;
+            border:1px solid #eef2f7;
+        }
+        .team-photo {
+            width:120px; height:120px; background:#0066CC; border-radius:50%;
+            margin:0 auto 20px; display:flex; align-items:center; justify-content:center;
+            color:white; font-size:48px; font-weight:600;
+        }
+        .team-name { font-size:18px; font-weight:600; color:#1A2B4C; margin-bottom:5px; }
+        .team-position { color:#0066CC; margin-bottom:15px; font-size:14px; }
+        .team-bio { color:#666; font-size:14px; line-height:1.6; }
+        
+        /* Партнёры */
+        .partners-section {
+            background:#f8f9fc; border-radius:20px; padding:40px; margin-bottom:60px;
+            text-align:center;
+        }
+        .partners-grid {
+            display:flex; justify-content:center; align-items:center; gap:40px; flex-wrap:wrap;
+            margin-top:30px;
+        }
+        .partner-item {
+            background:white; padding:15px 30px; border-radius:50px; font-weight:600;
+            color:#1A2B4C; border:1px solid #eef2f7;
+        }
+        
+        /* Отзывы */
+        .testimonials-section { margin-bottom:60px; }
+        .testimonials-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:25px;
+        }
+        .testimonial-card {
+            background:#f8f9fc; border-radius:20px; padding:25px; border:1px solid #eef2f7;
+        }
+        .testimonial-text {
+            font-style:italic; color:#555; margin-bottom:15px; line-height:1.6;
+        }
+        .testimonial-author {
+            font-weight:600; color:#1A2B4C; display:flex; align-items:center; gap:10px;
+        }
+        .testimonial-author i { color:#0066CC; }
+        
+        /* Подвал */
+        footer { background:#1A2B4C; color:white; padding:40px 0; margin-top:60px; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:30px; }
+        .footer-col h4 { margin-bottom:15px; }
+        .footer-col a { color:#ccc; text-decoration:none; display:block; margin-bottom:8px; }
+        .footer-col a:hover { color:white; }
+        
+        @media (max-width:768px) {
+            .header-inner { flex-direction:column; gap:10px; }
+            nav ul { justify-content:center; }
+            .about-hero { flex-direction:column; text-align:center; padding:30px; }
+            .history-section { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <div class="logo"><a href="index.html">Tab<span>Market</span></a></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="delivery.html">Доставка</a></li>
+                    <li><a href="sales.html">Акции</a></li>
+                    <li><a href="about.html" class="active">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <a href="search.html"><i class="fas fa-search"></i></a>
+                <a href="wishlist.html">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count" id="wishlist-count">0</span>
+                </a>
+                <a href="cart.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="account.html" id="user-icon"><i class="far fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="index.html">Главная</a> / <span>О компании</span>
+        </div>
+
+        <h1 class="page-title">О компании TabMarket</h1>
+
+        <!-- Hero секция -->
+        <div class="about-hero">
+            <div class="about-hero-text">
+                <h2>Мы делаем технологии ближе</h2>
+                <p>TabMarket — это не просто магазин планшетов. Мы — команда энтузиастов, которые помогают людям находить идеальные устройства для работы, творчества, учёбы и развлечений. Наша миссия — сделать качественную технику доступной, а процесс выбора — простым и приятным.</p>
+                <p>За 5 лет работы мы помогли более 10 000 клиентов выбрать планшеты, которые стали их верными помощниками в повседневной жизни.</p>
+            </div>
+            <div class="about-hero-image">
+                <img src="images/ipad-pro.png" alt="TabMarket team">
+            </div>
+        </div>
+
+        <!-- Наши преимущества -->
+        <h2 class="section-title" style="font-size:28px; margin-bottom:30px;">Почему выбирают нас</h2>
+        <div class="advantages-grid">
+            <div class="advantage-card">
+                <div class="advantage-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Только оригиналы</h3>
+                <p>Мы работаем напрямую с официальными дистрибьюторами, поэтому гарантируем 100% оригинальность всех устройств.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon"><i class="fas fa-headset"></i></div>
+                <h3>Экспертная поддержка</h3>
+                <p>Наши консультанты — действующие IT-специалисты, которые знают о планшетах всё и помогут с выбором.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon"><i class="fas fa-truck"></i></div>
+                <h3>Быстрая доставка</h3>
+                <p>Доставляем заказы по всей Беларуси в кратчайшие сроки. В Минске — день в день.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Гарантия лучшей цены</h3>
+                <p>Найдёте дешевле? Мы сделаем скидку и вернём разницу!</p>
+            </div>
+        </div>
+
+        <!-- История компании -->
+        <div class="history-section">
+            <div class="history-text">
+                <h3>Наша история</h3>
+                <p>Всё началось в 2021 году с небольшого онлайн-проекта. Мы заметили, что людям сложно ориентироваться в многообразии планшетов: кто-то ищет устройство для рисования, кому-то нужен планшет для чтения, а кто-то хочет заменить ноутбук. Так родилась идея создать специализированный магазин, где каждый сможет получить экспертную помощь.</p>
+                <p>За 5 лет мы выросли из небольшого стартапа в одну из ведущих площадок по продаже планшетов в Беларуси. Сегодня в нашем каталоге представлены все ведущие бренды: Apple, Samsung, Huawei, Xiaomi, TCL, Lenovo и другие.</p>
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">5+</span>
+                        <span class="stat-label">лет работы</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">10 000+</span>
+                        <span class="stat-label">довольных клиентов</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">моделей в наличии</span>
+                    </div>
+                </div>
+            </div>
+            <div class="history-image">
+                <img src="images/samsung-tab-s9.png" alt="Наш магазин">
+            </div>
+        </div>
+
+        <!-- Наша команда -->
+        <div class="team-section">
+            <h2 class="section-title" style="font-size:28px; margin-bottom:30px;">Наша команда</h2>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-photo">А</div>
+                    <div class="team-name">Анжелика Кравчук</div>
+                    <div class="team-position">Основатель, CEO</div>
+                    <div class="team-bio">Эксперт в области IT и маркетинга. Знает о планшетах всё и даже больше.</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">А</div>
+                    <div class="team-name">Александра Лешкевич</div>
+                    <div class="team-position">Руководитель отдела продаж</div>
+                    <div class="team-bio">Поможет подобрать идеальное устройство под любые задачи.</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">А</div>
+                    <div class="team-name">Александр Адамцевич</div>
+                    <div class="team-position">Технический эксперт</div>
+                    <div class="team-bio">Разбирается в характеристиках до мельчайших деталей.</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">К</div>
+                    <div class="team-name">Кира Кочеткова</div>
+                    <div class="team-position">Руководитель службы поддержки</div>
+                    <div class="team-bio">Всегда на связи, чтобы решить любой вопрос клиента.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Наши партнёры -->
+        <div class="partners-section">
+            <h3 style="font-size:24px; color:#1A2B4C; margin-bottom:15px;">Наши партнёры</h3>
+            <p style="color:#666; margin-bottom:20px;">Мы сотрудничаем с ведущими производителями и официальными дистрибьюторами</p>
+            <div class="partners-grid">
+                <span class="partner-item">Apple</span>
+                <span class="partner-item">Samsung</span>
+                <span class="partner-item">Huawei</span>
+                <span class="partner-item">Xiaomi</span>
+                <span class="partner-item">TCL</span>
+                <span class="partner-item">Lenovo</span>
+            </div>
+        </div>
+
+        <!-- Отзывы клиентов -->
+        <div class="testimonials-section">
+            <h2 class="section-title" style="font-size:28px; margin-bottom:30px;">Что говорят наши клиенты</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">«Огромное спасибо команде TabMarket! Помогли выбрать iPad для работы с графикой. Всё подробно рассказали, дали протестировать. Доставка быстрая, цена порадовала. Обязательно вернусь!»</div>
+                    <div class="testimonial-author"><i class="fas fa-user-circle"></i> Анна, дизайнер</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">«Искал планшет для чтения научной литературы. Посоветовали Huawei с экраном PaperMatte. Это просто спасение для глаз! Спасибо за профессиональную консультацию.»</div>
+                    <div class="testimonial-author"><i class="fas fa-user-circle"></i> Дмитрий, преподаватель</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">«Покупали планшет для ребёнка в школу. Менеджер подобрал отличный вариант по бюджету, ещё и чехол в подарок дали. Очень довольны сервисом!»</div>
+                    <div class="testimonial-author"><i class="fas fa-user-circle"></i> Елена, мама</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>TabMarket</h4>
+                <p>Специализированный магазин планшетов</p>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a href="about.html">О компании</a>
+                <a href="delivery.html">Доставка</a>
+                <a href="contacts.html">Контакты</a>
+            </div>
+            <div class="footer-col">
+                <h4>Помощь</h4>
+                <a href="delivery.html#faq-section">Вопрос-ответ</a>
+                <a href="delivery.html#returns">Возврат</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-phone"></i> +375 29 123-45-67</p>
+                <p><i class="fas fa-envelope"></i> info@tabmarket.by</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function updateCounters() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            const userIcon = document.getElementById('user-icon');
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                userIcon.innerHTML = '<i class="fas fa-user"></i>';
+            } else {
+                userIcon.innerHTML = '<i class="far fa-user"></i>';
+            }
+        }
+
+        window.addEventListener('load', updateCounters);
+    </script>
+</body>
+</html>

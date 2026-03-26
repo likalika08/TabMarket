@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Акции и скидки - TabMarket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+        body { background:#fff; color:#333; }
+        .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+        
+        /* Шапка */
+        header { background:white; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:15px 0; flex-wrap:wrap; }
+        .logo a { font-size:24px; font-weight:600; color:#1A2B4C; text-decoration:none; }
+        .logo span { color:#0066CC; }
+        nav ul { display:flex; list-style:none; gap:20px; flex-wrap:wrap; }
+        nav a { text-decoration:none; color:#333; font-weight:500; }
+        nav a:hover, nav a.active { color:#0066CC; }
+        .user-actions { display:flex; gap:15px; align-items:center; }
+        .user-actions a { color:#333; text-decoration:none; font-size:18px; position:relative; }
+        .cart-count, .wishlist-count { background:#0066CC; color:white; border-radius:50%; padding:2px 6px; font-size:11px; position:absolute; top:-8px; right:-10px; }
+        
+        /* Хлебные крошки */
+        .breadcrumbs { margin:20px 0; color:#777; font-size:14px; }
+        .breadcrumbs a { color:#0066CC; text-decoration:none; }
+        
+        /* Заголовок страницы */
+        .page-title { font-size:36px; color:#1A2B4C; margin:30px 0 40px; padding-bottom:15px; border-bottom:3px solid #0066CC; width:fit-content; }
+        
+        /* Баннер акций */
+        .promo-banner {
+            background:linear-gradient(135deg, #0066CC, #1A2B4C);
+            color:white; border-radius:20px; padding:40px; margin-bottom:40px;
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;
+        }
+        .promo-banner h2 { font-size:32px; margin-bottom:10px; }
+        .promo-banner p { font-size:18px; opacity:0.9; margin-bottom:20px; }
+        
+        /* Сетка акций - только товары со скидкой */
+        .sales-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:30px;
+            margin-bottom:60px;
+        }
+        .sale-card {
+            background:#f8f9fc; border-radius:20px; overflow:hidden; border:1px solid #eef2f7;
+            transition:0.3s; position:relative;
+        }
+        .sale-card:hover { transform:translateY(-5px); box-shadow:0 15px 30px rgba(0,102,204,0.15); }
+        .sale-badge {
+            position:absolute; top:20px; left:20px; background:#ff4444; color:white;
+            padding:8px 20px; border-radius:30px; font-weight:700; font-size:18px; z-index:2;
+        }
+        .sale-image {
+            height:200px; background:#eef2f7; display:flex; align-items:center; justify-content:center;
+        }
+        .sale-image img { max-width:100%; max-height:180px; object-fit:contain; }
+        .sale-content { padding:25px; }
+        .sale-title { font-size:22px; color:#1A2B4C; margin-bottom:10px; font-weight:600; }
+        .sale-desc { color:#666; margin-bottom:15px; line-height:1.5; }
+        .sale-price {
+            display:flex; align-items:center; gap:15px; margin-bottom:20px;
+        }
+        .old-price { color:#999; text-decoration:line-through; font-size:18px; }
+        .new-price { color:#0066CC; font-size:28px; font-weight:700; }
+        .btn { 
+            display:inline-block; background:#0066CC; color:white; padding:12px 30px;
+            border-radius:30px; text-decoration:none; font-weight:600; transition:0.3s; border:none; cursor:pointer;
+        }
+        .btn:hover { background:#1A2B4C; }
+        .btn-outline {
+            background:transparent; border:1px solid #0066CC; color:#0066CC; padding:8px 18px;
+            border-radius:30px; text-decoration:none; font-size:14px; margin-left:10px;
+        }
+        
+        /* Сезонные распродажи */
+        .seasonal-section { margin:60px 0; }
+        .seasonal-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px;
+        }
+        .seasonal-card {
+            background:linear-gradient(145deg, #f8f9fc, white); border-radius:16px;
+            padding:25px; text-align:center; border:1px solid #eef2f7;
+        }
+        .seasonal-icon { font-size:48px; color:#0066CC; margin-bottom:15px; }
+        .seasonal-card h3 { font-size:18px; color:#1A2B4C; margin-bottom:10px; }
+        .seasonal-card p { color:#666; font-size:14px; margin-bottom:15px; }
+        .discount-badge {
+            background:#ff4444; color:white; padding:5px 15px; border-radius:30px;
+            font-weight:700; display:inline-block; margin-bottom:15px;
+        }
+        
+        /* Товары со скидкой в каталоге */
+        .discount-label {
+            position:absolute; top:10px; left:10px; background:#ff4444; color:white;
+            padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; z-index:2;
+        }
+        
+        /* Подвал */
+        footer { background:#1A2B4C; color:white; padding:40px 0; margin-top:60px; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:30px; }
+        .footer-col h4 { margin-bottom:15px; }
+        .footer-col a { color:#ccc; text-decoration:none; display:block; margin-bottom:8px; }
+        .footer-col a:hover { color:white; }
+        
+        @media (max-width:768px) {
+            .header-inner { flex-direction:column; gap:10px; }
+            nav ul { justify-content:center; }
+            .promo-banner { flex-direction:column; text-align:center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <div class="logo"><a href="index.html">Tab<span>Market</span></a></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="delivery.html">Доставка</a></li>
+                    <li><a href="sales.html" class="active">Акции</a></li>
+                    <li><a href="about.html">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <a href="search.html"><i class="fas fa-search"></i></a>
+                <a href="wishlist.html">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count" id="wishlist-count">0</span>
+                </a>
+                <a href="cart.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="account.html" id="user-icon"><i class="far fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="index.html">Главная</a> / <span>Акции</span>
+        </div>
+
+        <h1 class="page-title">Акции и спецпредложения</h1>
+
+        <!-- Главный промо-баннер -->
+        <div class="promo-banner">
+            <div>
+                <h2>🔥 Скидки до 20% на популярные модели</h2>
+                <p>Только до конца месяца! Успейте купить планшеты по выгодным ценам</p>
+            </div>
+            <div>
+                <a href="#sale-items" class="btn" style="background:white; color:#0066CC;">Смотреть все акции</a>
+            </div>
+        </div>
+
+        <!-- Активные акции - только товары со скидкой -->
+        <div class="sales-grid" id="sales-grid">
+            <!-- Товары будут загружены через JavaScript -->
+        </div>
+
+        <!-- Сезонные распродажи -->
+        <div class="seasonal-section">
+            <h2 class="section-title" style="font-size:28px; margin-bottom:30px;">Сезонные предложения</h2>
+            <div class="seasonal-grid">
+                <div class="seasonal-card">
+                    <div class="seasonal-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <span class="discount-badge">-5%</span>
+                    <h3>Студентам</h3>
+                    <p>Предъяви студенческий и получи скидку 5% на любой планшет</p>
+                </div>
+                <div class="seasonal-card">
+                    <div class="seasonal-icon"><i class="fas fa-users"></i></div>
+                    <span class="discount-badge">-10%</span>
+                    <h3>Семейный</h3>
+                    <p>При покупке двух планшетов — скидка 10% на второй</p>
+                </div>
+                <div class="seasonal-card">
+                    <div class="seasonal-icon"><i class="fas fa-gift"></i></div>
+                    <span class="discount-badge">Подарок</span>
+                    <h3>Аксессуары в подарок</h3>
+                    <p>При заказе от 3000 BYN — чехол и стилус бесплатно</p>
+                </div>
+                <div class="seasonal-card">
+                    <div class="seasonal-icon"><i class="fas fa-truck"></i></div>
+                    <span class="discount-badge">0 BYN</span>
+                    <h3>Бесплатная доставка</h3>
+                    <p>При заказе от 3500 BYN доставка по Беларуси бесплатно</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>TabMarket</h4>
+                <p>Специализированный магазин планшетов</p>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a href="about.html">О компании</a>
+                <a href="delivery.html">Доставка</a>
+                <a href="contacts.html">Контакты</a>
+            </div>
+            <div class="footer-col">
+                <h4>Помощь</h4>
+                <a href="delivery.html#faq-section">Вопрос-ответ</a>
+                <a href="delivery.html#returns">Возврат</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-phone"></i> +375 29 123-45-67</p>
+                <p><i class="fas fa-envelope"></i> info@tabmarket.by</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ПОЛНЫЙ МАССИВ ПРОДУКТОВ (вставлен полностью)
+        const products = [
+            { 
+                id:1, 
+                name:'Apple iPad Pro 12.9 (2025)', 
+                price:3990, 
+                salePrice:3590,
+                oldPrice:3990,
+                image:'images/ipad-pro.png',
+                images:[
+                    'images/ipad-pro-2.jpg',
+                    'images/ipad-pro-3.jpg'
+                ],
+                category:'premium', 
+                brand:'Apple', 
+                color:'серый космос', 
+                os:'iPadOS 18', 
+                screen:'12.9"',
+                screenSize:12.9,
+                resolution:'2732 x 2048 (Liquid Retina XDR)',
+                processor:'Apple M2 (8 ядер)',
+                ram:'8 ГБ',
+                storage:'256 ГБ',
+                camera:'12 МП (широкоугольная) + LiDAR',
+                cameraMP:12,
+                camera2:'LiDAR сканер',
+                camera2MP:0,
+                battery:'До 10 часов',
+                weight:'682 г',
+                isSale: true,
+                popularity: 450
+            },
+            { 
+                id:2, 
+                name:'Samsung Galaxy Tab S9+', 
+                price:3450, 
+                salePrice:2990,
+                oldPrice:3450,
+                image:'images/samsung-tab-s9.png',
+                images:[
+                    'images/samsung-tab-s9-2.jpg',
+                    'images/samsung-tab-s9-3.jpg'
+                ],
+                category:'premium', 
+                brand:'Samsung', 
+                color:'бежевый', 
+                os:'Android 14 (One UI 6.1)', 
+                screen:'12.4"',
+                screenSize:12.4,
+                resolution:'2800 x 1752 (Dynamic AMOLED 2X, 120 Гц)',
+                processor:'Snapdragon 8 Gen 2',
+                ram:'12 ГБ',
+                storage:'256 ГБ',
+                camera:'13 МП + 8 МП (ультраширокоугольная)',
+                cameraMP:13,
+                camera2:'8 МП',
+                camera2MP:8,
+                battery:'До 12 часов',
+                weight:'586 г',
+                isSale: true,
+                popularity: 488
+            },
+            { 
+                id:3, 
+                name:'Huawei MatePad 11.5 PaperMatte', 
+                price:1690, 
+                salePrice:1430,
+                oldPrice:1690,
+                image:'images/huawei-matepad.png',
+                images:[
+                    'images/huawei-matepad-2.jpg',
+                    'images/huawei-matepad-3.jpg'
+                ],
+                category:'mid', 
+                brand:'Huawei', 
+                color:'серый', 
+                os:'HarmonyOS 3.0', 
+                screen:'11.5"',
+                screenSize:11.5,
+                resolution:'2200 x 1440 (PaperMatte Display)',
+                processor:'Snapdragon 7 Gen 1',
+                ram:'6 ГБ',
+                storage:'128 ГБ',
+                camera:'13 МП',
+                cameraMP:13,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 11 часов',
+                weight:'499 г',
+                isSale: true,
+                popularity: 320
+            },
+            { 
+                id:4, 
+                name:'Xiaomi Pad 6S Pro', 
+                price:2290, 
+                salePrice:1990,
+                oldPrice:2290,
+                image:'images/xiaomi-pad.png',
+                images:[
+                    'images/xiaomi-pad-2.jpg',
+                    'images/xiaomi-pad-3.jpg'
+                ],
+                category:'premium', 
+                brand:'Xiaomi', 
+                color:'черный', 
+                os:'Android 14 (HyperOS)', 
+                screen:'12.4"',
+                screenSize:12.4,
+                resolution:'3048 x 2032 (144 Гц)',
+                processor:'Snapdragon 8 Gen 2',
+                ram:'8 ГБ',
+                storage:'256 ГБ',
+                camera:'50 МП',
+                cameraMP:50,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 14 часов',
+                weight:'590 г',
+                isSale: true,
+                popularity: 280
+            },
+            { 
+                id:5, 
+                name:'Apple iPad Air 11" M3', 
+                price:2490, 
+                salePrice:2240,
+                oldPrice:2490,
+                image:'images/ipad-air.png',
+                images:[
+                    'images/ipad-air-2.jpg',
+                    'images/ipad-air-3.jpg'
+                ],
+                category:'premium', 
+                brand:'Apple', 
+                color:'синий', 
+                os:'iPadOS 18', 
+                screen:'11"',
+                screenSize:11,
+                resolution:'2360 x 1640 (Liquid Retina)',
+                processor:'Apple M3',
+                ram:'8 ГБ',
+                storage:'128 ГБ',
+                camera:'12 МП',
+                cameraMP:12,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 9 часов',
+                weight:'462 г',
+                isSale: true,
+                popularity: 410
+            },
+            { 
+                id:6, 
+                name:'TCL NXTPAPER 11 Plus', 
+                price:1390, 
+                salePrice:1190,
+                oldPrice:1390,
+                image:'images/tcl-nxtpaper.png',
+                images:[
+                    'images/tcl-nxtpaper-2.jpg',
+                    'images/tcl-nxtpaper-3.jpg'
+                ],
+                category:'mid', 
+                brand:'TCL', 
+                color:'серый', 
+                os:'Android 13', 
+                screen:'11"',
+                screenSize:11,
+                resolution:'2000 x 1200 (NXTPAPER)',
+                processor:'MediaTek Helio G99',
+                ram:'4 ГБ',
+                storage:'128 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 12 часов',
+                weight:'480 г',
+                isSale: true,
+                popularity: 180
+            },
+            { 
+                id:7, 
+                name:'Samsung Galaxy Tab A9+', 
+                price:990, 
+                image:'images/samsung-a9.png',
+                images:[
+                    'images/samsung-a9-2.jpg',
+                    'images/samsung-a9-3.jpg'
+                ],
+                category:'budget', 
+                brand:'Samsung', 
+                color:'серебристый', 
+                os:'Android 13', 
+                screen:'11"',
+                screenSize:11,
+                resolution:'1920 x 1200 (TFT)',
+                processor:'Snapdragon 695',
+                ram:'4 ГБ',
+                storage:'64 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 10 часов',
+                weight:'480 г',
+                isSale: false,
+                popularity: 355
+            },
+            { 
+                id:8, 
+                name:'Lenovo Tab P12', 
+                price:1590, 
+                image:'images/lenovo-tab-p12.png',
+                images:[
+                    'images/lenovo-tab-p12-2.jpg',
+                    'images/lenovo-tab-p12-3.jpeg'
+                ],
+                category:'mid', 
+                brand:'Lenovo', 
+                color:'серый', 
+                os:'Android 13', 
+                screen:'12.7"',
+                screenSize:12.7,
+                resolution:'2944 x 1840 (3K)',
+                processor:'MediaTek Dimensity 7050',
+                ram:'8 ГБ',
+                storage:'256 ГБ',
+                camera:'13 МП',
+                cameraMP:13,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 12 часов',
+                weight:'615 г',
+                isSale: false,
+                popularity: 210
+            },
+            { 
+                id:9, 
+                name:'Samsung Galaxy Tab A7 Lite', 
+                price:650, 
+                image:'images/samsung-a7.jpg',
+                images:[
+                    'images/samsung-a7-2.jpg',
+                    'images/samsung-a7-3.jpg'
+                ],
+                category:'budget', 
+                brand:'Samsung', 
+                color:'черный', 
+                os:'Android 11', 
+                screen:'8.7"',
+                screenSize:8.7,
+                resolution:'1340 x 800 (TFT)',
+                processor:'MediaTek MT8768',
+                ram:'3 ГБ',
+                storage:'32 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 8 часов',
+                weight:'366 г',
+                isSale: false,
+                popularity: 344
+            },
+            { 
+                id:10, 
+                name:'Huawei MatePad T 8', 
+                price:590, 
+                image:'images/huawei-t8.jpg',
+                images:[
+                    'images/huawei-t8-2.jpg',
+                    'images/huawei-t8-3.jpg'
+                ],
+                category:'budget', 
+                brand:'Huawei', 
+                color:'черный', 
+                os:'Android 10', 
+                screen:'8"',
+                screenSize:8,
+                resolution:'1280 x 800',
+                processor:'MediaTek MT8768',
+                ram:'2 ГБ',
+                storage:'16 ГБ',
+                camera:'5 МП',
+                cameraMP:5,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 7 часов',
+                weight:'350 г',
+                isSale: false,
+                popularity: 150
+            },
+            { 
+                id:11, 
+                name:'Samsung Galaxy Tab A8 10.5', 
+                price:850, 
+                image:'images/samsung-a8.jpg',
+                images:[
+                    'images/samsung-a8-2.jpg',
+                    'images/samsung-a8-3.jpg'
+                ],
+                category:'budget', 
+                brand:'Samsung', 
+                color:'темно-серый', 
+                os:'Android 11', 
+                screen:'10.5"',
+                screenSize:10.5,
+                resolution:'1920 x 1200 (TFT)',
+                processor:'Unisoc Tiger T618',
+                ram:'4 ГБ',
+                storage:'64 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 9 часов',
+                weight:'508 г',
+                isSale: false,
+                popularity: 200
+            },
+            { 
+                id:12, 
+                name:'Samsung Galaxy Tab S6 Lite (2024)', 
+                price:1290, 
+                salePrice:990,
+                oldPrice:1290,
+                image:'images/samsung-s6-lite.jpg',
+                images:[
+                    'images/samsung-s6-lite-2.jpg',
+                    'images/samsung-s6-lite-3.jpg'
+                ],
+                category:'mid', 
+                brand:'Samsung', 
+                color:'синий', 
+                os:'Android 14', 
+                screen:'10.4"',
+                screenSize:10.4,
+                resolution:'2000 x 1200 (TFT)',
+                processor:'Exynos 1280',
+                ram:'4 ГБ',
+                storage:'64 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 12 часов',
+                weight:'465 г',
+                isSale: true,
+                popularity: 320
+            },
+            { 
+                id:13, 
+                name:'Samsung Galaxy Tab S9 FE', 
+                price:1890, 
+                image:'images/samsung-s9-fe.jpg',
+                images:[
+                    'images/samsung-s9-fe-2.jpg',
+                    'images/samsung-s9-fe-3.jpg'
+                ],
+                category:'mid', 
+                brand:'Samsung', 
+                color:'белый', 
+                os:'Android 13', 
+                screen:'10.9"',
+                screenSize:10.9,
+                resolution:'2304 x 1440 (IPS, 90 Гц)',
+                processor:'Exynos 1380',
+                ram:'6 ГБ',
+                storage:'128 ГБ',
+                camera:'12 МП',
+                cameraMP:12,
+                camera2:'8 МП (ультраширокоугольная)',
+                camera2MP:8,
+                battery:'До 12 часов',
+                weight:'523 г',
+                isSale: false,
+                popularity: 97
+            },
+            { 
+                id:14, 
+                name:'Xiaomi Redmi Pad SE', 
+                price:890, 
+                image:'images/xiaomi-redmi.jpg',
+                images:[
+                    'images/xiaomi-redmi-2.jpg',
+                    'images/xiaomi-redmi-3.jpeg'
+                ],
+                category:'budget', 
+                brand:'Xiaomi', 
+                color:'зеленый', 
+                os:'Android 13', 
+                screen:'11"',
+                screenSize:11,
+                resolution:'1920 x 1200 (90 Гц)',
+                processor:'Snapdragon 680',
+                ram:'4 ГБ',
+                storage:'128 ГБ',
+                camera:'8 МП',
+                cameraMP:8,
+                camera2:'2 МП (макро)',
+                camera2MP:2,
+                battery:'До 12 часов',
+                weight:'478 г',
+                isSale: false,
+                popularity: 127
+            },
+            { 
+                id:15, 
+                name:'Lenovo Tab M10 HD', 
+                price:620, 
+                image:'images/lenovo-m10.jpg',
+                images:[
+                    'images/lenovo-m10-2.jpg',
+                    'images/lenovo-m10-3.jpg'
+                ],
+                category:'budget', 
+                brand:'Lenovo', 
+                color:'серый', 
+                os:'Android 10', 
+                screen:'10.1"',
+                screenSize:10.1,
+                resolution:'1280 x 800',
+                processor:'MediaTek P22T',
+                ram:'2 ГБ',
+                storage:'32 ГБ',
+                camera:'5 МП',
+                cameraMP:5,
+                camera2:'нет',
+                camera2MP:0,
+                battery:'До 8 часов',
+                weight:'420 г',
+                isSale: false,
+                popularity: 67
+            }
+        ];
+
+        // Только товары со скидкой
+        const saleProducts = products.filter(p => p.isSale === true);
+
+        // Функция обновления счётчиков
+        function updateCounters() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            // Обновляем иконку пользователя
+            const userIcon = document.getElementById('user-icon');
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                userIcon.innerHTML = '<i class="fas fa-user"></i>';
+            } else {
+                userIcon.innerHTML = '<i class="far fa-user"></i>';
+            }
+        }
+
+        // Функция рендера акций (только товары со скидкой)
+        function renderSales() {
+            const container = document.getElementById('sales-grid');
+            container.innerHTML = '';
+            
+            if (saleProducts.length === 0) {
+                container.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:40px;">В данный момент акций нет</p>';
+                return;
+            }
+            
+            saleProducts.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'sale-card';
+                
+                // Рассчитываем процент скидки
+                const discountPercent = Math.round((1 - product.salePrice / product.oldPrice) * 100);
+                
+                card.innerHTML = `
+                    <div class="sale-badge">-${discountPercent}%</div>
+                    <div class="sale-image">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="sale-content">
+                        <h3 class="sale-title">${product.name}</h3>
+                        <p class="sale-desc">${product.screen}, ${product.processor}</p>
+                        <div class="sale-price">
+                            <span class="old-price">${product.oldPrice} BYN</span>
+                            <span class="new-price">${product.salePrice} BYN</span>
+                        </div>
+                        <div style="margin-bottom:15px; color:#666;">
+                            <i class="fas fa-camera"></i> ${product.camera} · 
+                            <i class="fas fa-battery-full"></i> ${product.battery}
+                        </div>
+                        <div>
+                            <a href="product.html?id=${product.id}" class="btn">Купить</a>
+                            <a href="#" class="btn-outline wishlist-btn" data-id="${product.id}"><i class="far fa-heart"></i></a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Обработчики для избранного
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = parseInt(this.dataset.id);
+                    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                    
+                    if (wishlist.includes(id)) {
+                        wishlist = wishlist.filter(i => i !== id);
+                        this.innerHTML = '<i class="far fa-heart"></i>';
+                    } else {
+                        wishlist.push(id);
+                        this.innerHTML = '<i class="fas fa-heart" style="color:#0066CC;"></i>';
+                    }
+                    
+                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                    updateCounters();
+                });
+            });
+        }
+        
+        // Загрузка страницы
+        window.addEventListener('load', () => {
+            updateCounters();
+            renderSales();
+        });
+    </script>
+</body>
+</html>

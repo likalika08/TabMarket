@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TabMarket - интернет-магазин планшетов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Стили как в предыдущих версиях */
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+        body { background:#fff; color:#333; }
+        .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+        header { background:white; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:15px 0; flex-wrap:wrap; }
+        .logo a { font-size:24px; font-weight:600; color:#1A2B4C; text-decoration:none; }
+        .logo span { color:#0066CC; }
+        nav ul { display:flex; list-style:none; gap:20px; flex-wrap:wrap; }
+        nav a { text-decoration:none; color:#333; font-weight:500; }
+        nav a:hover, nav a.active { color:#0066CC; }
+        .user-actions { display:flex; gap:15px; align-items:center; }
+        .user-actions a { color:#333; text-decoration:none; font-size:18px; position:relative; }
+        .cart-count, .wishlist-count { background:#0066CC; color:white; border-radius:50%; padding:2px 6px; font-size:11px; position:absolute; top:-8px; right:-10px; }
+        .hero { background:linear-gradient(135deg,#f5f7fa,#e9ecf5); padding:60px 0; margin-bottom:40px; }
+        .hero-content { display:flex; align-items:center; gap:40px; flex-wrap:wrap; }
+        .hero-text h1 { font-size:42px; color:#1A2B4C; margin-bottom:20px; }
+        .hero-text p { font-size:18px; color:#4a4a4a; margin-bottom:30px; }
+        .btn { display:inline-block; background:#0066CC; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:600; transition:0.3s; border:none; cursor:pointer; }
+        .btn:hover { background:#1A2B4C; }
+        .section-title { font-size:32px; color:#1A2B4C; margin:40px 0 30px; padding-bottom:10px; border-bottom:3px solid #0066CC; width:fit-content; }
+        .collections-grid, .products-grid, .reviews-grid, .features-grid { display:grid; gap:25px; }
+        .collections-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+        .collection-card { background:#f8f9fc; border-radius:16px; padding:30px 20px; text-align:center; border:1px solid #eef2f7; transition:0.3s; text-decoration:none; color:inherit; display:block; }
+        .collection-card:hover { transform:translateY(-5px); box-shadow:0 10px 25px rgba(0,102,204,0.1); }
+        .collection-icon { font-size:48px; color:#0066CC; margin-bottom:15px; }
+        .products-grid { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+        .product-card { background:white; border:1px solid #eef2f7; border-radius:16px; padding:15px; position:relative; transition:0.3s; }
+        .product-card:hover { box-shadow:0 10px 25px rgba(0,102,204,0.1); transform:translateY(-3px); }
+        .wishlist { position:absolute; top:10px; right:10px; font-size:18px; color:#ccc; cursor:pointer; z-index:2; }
+        .wishlist.active { color:#0066CC; }
+        .product-image { text-align:center; height:150px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+        .product-image img { max-width:100%; max-height:150px; object-fit:contain; }
+        .product-title { font-size:15px; font-weight:600; margin-bottom:6px; color:#1A2B4C; height:40px; overflow:hidden; }
+        .product-price { font-size:18px; font-weight:700; color:#0066CC; margin-bottom:10px; }
+        .quick-view { display:block; text-align:center; background:#f0f4fe; color:#0066CC; padding:8px; border-radius:30px; text-decoration:none; font-size:13px; font-weight:500; transition:0.2s; }
+        .quick-view:hover { background:#0066CC; color:white; }
+        .features { background:#f8f9fc; padding:40px 0; margin:40px 0; }
+        .features-grid { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); text-align:center; }
+        .feature-item i { font-size:40px; color:#0066CC; margin-bottom:10px; }
+        .reviews-grid { grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+        .review-card { background:#f8f9fc; padding:20px; border-radius:16px; }
+        footer { background:#1A2B4C; color:white; padding:40px 0; margin-top:40px; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:30px; }
+        .footer-col h4 { margin-bottom:15px; }
+        .footer-col a { color:#ccc; text-decoration:none; display:block; margin-bottom:8px; }
+        .footer-col a:hover { color:white; }
+        @media (max-width:768px) { .header-inner { flex-direction:column; gap:10px; } nav ul { justify-content:center; } .hero-content { flex-direction:column; text-align:center; } }
+        
+        /* Стили для модального окна авторизации */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 30px; max-width: 400px; width: 90%;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .modal-header h3 { font-size: 24px; color: #1A2B4C; }
+        .close-modal { font-size: 28px; cursor: pointer; color: #777; }
+        .auth-tabs {
+            display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eef2f7;
+        }
+        .auth-tab {
+            padding: 10px 20px; cursor: pointer; font-weight: 600; color: #777;
+            border-bottom: 2px solid transparent; margin-bottom: -2px;
+        }
+        .auth-tab.active {
+            color: #0066CC; border-bottom-color: #0066CC;
+        }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #1A2B4C; }
+        .form-group input {
+            width: 100%; padding: 12px 15px; border: 1px solid #d0ddee; border-radius: 30px;
+            font-size: 15px; outline: none;
+        }
+        .form-group input:focus { border-color: #0066CC; }
+        .error-message { color: #f44336; font-size: 13px; margin-top: 5px; display: none; }
+.quick-card {
+    transition:0.3s;
+}
+.quick-card:hover {
+    transform:translateY(-3px);
+    box-shadow:0 10px 20px rgba(0,102,204,0.15);
+}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <div class="logo"><a href="index.html">Tab<span>Market</span></a></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="delivery.html">Доставка</a></li>
+                    <li><a href="sales.html">Акции</a></li>
+                    <li><a href="about.html">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <a href="search.html"><i class="fas fa-search"></i></a>
+                <a href="wishlist.html">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count" id="wishlist-count">0</span>
+                </a>
+                <a href="cart.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="#" id="user-icon-link"><i class="far fa-user" id="user-icon"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>Планшеты для любых задач</h1>
+                <p>Чтение, творчество, работа — найдём идеальное устройство специально для вас. Бесплатная доставка по Минску.</p>
+                <a href="catalog.html" class="btn">Перейти к каталогу</a>
+            </div>
+            <div class="hero-image">
+                <img src="images/ipad-pro.png" alt="Планшеты" style="max-width:100%; max-height:300px; border-radius:20px; object-fit:contain;">
+            </div>
+        </div>
+    </section>
+
+<!-- Популярные категории для быстрого доступа -->
+<section class="container">
+    <h2 class="section-title">Быстрый доступ к товарам</h2>
+    <div class="quick-access-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:15px; margin-bottom:40px;">
+        <a href="catalog.html?screen=7" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fas fa-mobile-alt" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>7 дюймов</h4>
+            <small>Компактные</small>
+        </a>
+        <a href="catalog.html?color=черный" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fas fa-paint-brush" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>Черные</h4>
+            <small>Классика</small>
+        </a>
+        <a href="catalog.html?brand=Samsung" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fas fa-star" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>Samsung</h4>
+            <small>Популярные</small>
+        </a>
+        <a href="catalog.html?os=Android" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fab fa-android" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>Android</h4>
+            <small>Гибкая ОС</small>
+        </a>
+        <a href="catalog.html?camera=12+2" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fas fa-camera" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>12+2 МП</h4>
+            <small>Двойная камера</small>
+        </a>
+        <a href="catalog.html?price=budget" class="quick-card" style="background:#f8f9fc; border-radius:16px; padding:20px; text-align:center; text-decoration:none; color:#1A2B4C;">
+            <i class="fas fa-coins" style="font-size:32px; color:#0066CC; margin-bottom:10px;"></i>
+            <h4>Бюджетные</h4>
+            <small>до 1000 BYN</small>
+        </a>
+    </div>
+</section>
+
+    <section class="container">
+        <h2 class="section-title">Популярные категории</h2>
+        <div class="collections-grid">
+            <a href="catalog.html?category=reading" class="collection-card">
+                <div class="collection-icon"><i class="fas fa-book-open"></i></div>
+                <h3>Для чтения</h3>
+                <p>Экраны PaperMatte, защита зрения, лёгкий вес.</p>
+            </a>
+            <a href="catalog.html?category=creative" class="collection-card">
+                <div class="collection-icon"><i class="fas fa-paint-brush"></i></div>
+                <h3>Для творчества</h3>
+                <p>Точная цветопередача, поддержка стилуса.</p>
+            </a>
+            <a href="catalog.html?category=work" class="collection-card">
+                <div class="collection-icon"><i class="fas fa-briefcase"></i></div>
+                <h3>Для работы</h3>
+                <p>Клавиатуры, мультизадачность, мощность.</p>
+            </a>
+            <a href="catalog.html?category=kids" class="collection-card">
+                <div class="collection-icon"><i class="fas fa-child"></i></div>
+                <h3>Для детей</h3>
+                <p>Родительский контроль, прочные чехлы.</p>
+            </a>
+        </div>
+    </section>
+
+    <section class="container">
+        <h2 class="section-title">Популярные модели</h2>
+        <div class="products-grid" id="popular-products"></div>
+    </section>
+
+    <section class="features">
+        <div class="container features-grid">
+            <div class="feature-item"><i class="fas fa-truck"></i><h4>Быстрая доставка</h4><p>По Беларуси за 1-2 дня</p></div>
+            <div class="feature-item"><i class="fas fa-credit-card"></i><h4>Удобная оплата</h4><p>Карты рассрочки, онлайн</p></div>
+            <div class="feature-item"><i class="fas fa-shield-alt"></i><h4>Гарантия</h4><p>Официальная до 2 лет</p></div>
+            <div class="feature-item"><i class="fas fa-headset"></i><h4>Консультация</h4><p>Поможем выбрать</p></div>
+        </div>
+    </section>
+
+    <section class="container reviews">
+        <h2 class="section-title">Отзывы клиентов</h2>
+        <div class="reviews-grid">
+            <div class="review-card"><div class="review-author">Анна</div><div>«Отличный магазин! Помогли выбрать iPad для рисования.»</div></div>
+            <div class="review-card"><div class="review-author">Дмитрий</div><div>«Взял планшет для чтения. Экран PaperMatte — глаза не устают.»</div></div>
+            <div class="review-card"><div class="review-author">Елена</div><div>«Ребёнку нужен был планшет для школы. Посоветовали отличный вариант.»</div></div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>TabMarket</h4>
+                <p>Специализированный магазин планшетов</p>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a href="about.html">О компании</a>
+                <a href="delivery.html">Доставка</a>
+                <a href="contacts.html">Контакты</a>
+            </div>
+            <div class="footer-col">
+                <h4>Помощь</h4>
+                <a href="delivery.html#faq-section">Вопрос-ответ</a>
+                <a href="delivery.html#returns">Возврат</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-phone"></i> +375 29 123-45-67</p>
+                <p><i class="fas fa-envelope"></i> info@tabmarket.by</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно авторизации -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Вход / Регистрация</h3>
+                <span class="close-modal" id="close-auth">&times;</span>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Вход</div>
+                <div class="auth-tab" data-tab="register">Регистрация</div>
+            </div>
+            
+            <!-- Форма входа -->
+            <div class="auth-form active" id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <div class="error-message" id="login-error"></div>
+                <button class="btn" style="width:100%;" id="login-btn">Войти</button>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div class="auth-form" id="register-form">
+                <div class="form-group">
+                    <label>Имя *</label>
+                    <input type="text" id="reg-name" placeholder="Анна">
+                </div>
+                <div class="form-group">
+                    <label>Фамилия *</label>
+                    <input type="text" id="reg-surname" placeholder="Иванова">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="reg-email" placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>Телефон *</label>
+                    <input type="tel" id="reg-phone" placeholder="+375 29 123-45-67">
+                </div>
+                <div class="form-group">
+                    <label>Пароль *</label>
+                    <input type="password" id="reg-password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Подтверждение пароля *</label>
+                    <input type="password" id="reg-password2" placeholder="••••••••">
+                </div>
+                <div class="error-message" id="register-error"></div>
+                <button class="btn" style="width:100%;" id="register-btn">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Массив продуктов
+        const products = [
+    { 
+        id:1, 
+        name:'Apple iPad Pro 12.9 (2025)', 
+        price:3990, 
+        salePrice:3590,
+        oldPrice:3990,
+        image:'images/ipad-pro.png',
+        images:[
+            'images/ipad-pro-2.jpg',
+            'images/ipad-pro-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Apple', 
+        color:'серый космос', 
+        os:'iPadOS 18', 
+        screen:'12.9"',
+        screenSize:12.9,
+        resolution:'2732 x 2048 (Liquid Retina XDR)',
+        processor:'Apple M2 (8 ядер)',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'12 МП (широкоугольная) + LiDAR',
+        cameraMP:12,
+        camera2:'LiDAR сканер',
+        camera2MP:0,
+        battery:'До 10 часов',
+        weight:'682 г',
+        isSale: true,
+        popularity: 450 // условный рейтинг популярности
+    },
+    { 
+        id:2, 
+        name:'Samsung Galaxy Tab S9+', 
+        price:3450, 
+        salePrice:2990,
+        oldPrice:3450,
+        image:'images/samsung-tab-s9.png',
+        images:[
+            'images/samsung-tab-s9-2.jpg',
+            'images/samsung-tab-s9-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Samsung', 
+        color:'бежевый', 
+        os:'Android 14 (One UI 6.1)', 
+        screen:'12.4"',
+        screenSize:12.4,
+        resolution:'2800 x 1752 (Dynamic AMOLED 2X, 120 Гц)',
+        processor:'Snapdragon 8 Gen 2',
+        ram:'12 ГБ',
+        storage:'256 ГБ',
+        camera:'13 МП + 8 МП (ультраширокоугольная)',
+        cameraMP:13,
+        camera2:'8 МП',
+        camera2MP:8,
+        battery:'До 12 часов',
+        weight:'586 г',
+        isSale: true,
+        popularity: 488
+    },
+    { 
+        id:3, 
+        name:'Huawei MatePad 11.5 PaperMatte', 
+        price:1690, 
+        salePrice:1430,
+        oldPrice:1690,
+        image:'images/huawei-matepad.png',
+        images:[
+            'images/huawei-matepad-2.jpg',
+            'images/huawei-matepad-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Huawei', 
+        color:'серый', 
+        os:'HarmonyOS 3.0', 
+        screen:'11.5"',
+        screenSize:11.5,
+        resolution:'2200 x 1440 (PaperMatte Display)',
+        processor:'Snapdragon 7 Gen 1',
+        ram:'6 ГБ',
+        storage:'128 ГБ',
+        camera:'13 МП',
+        cameraMP:13,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 11 часов',
+        weight:'499 г',
+        isSale: true,
+        popularity: 320
+    },
+    { 
+        id:4, 
+        name:'Xiaomi Pad 6S Pro', 
+        price:2290, 
+        salePrice:1990,
+        oldPrice:2290,
+        image:'images/xiaomi-pad.png',
+        images:[
+            'images/xiaomi-pad-2.jpg',
+            'images/xiaomi-pad-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Xiaomi', 
+        color:'черный', 
+        os:'Android 14 (HyperOS)', 
+        screen:'12.4"',
+        screenSize:12.4,
+        resolution:'3048 x 2032 (144 Гц)',
+        processor:'Snapdragon 8 Gen 2',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'50 МП',
+        cameraMP:50,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 14 часов',
+        weight:'590 г',
+        isSale: true,
+        popularity: 280
+    },
+    { 
+        id:5, 
+        name:'Apple iPad Air 11" M3', 
+        price:2490, 
+        salePrice:2240,
+        oldPrice:2490,
+        image:'images/ipad-air.png',
+        images:[
+            'images/ipad-air-2.jpg',
+            'images/ipad-air-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Apple', 
+        color:'синий', 
+        os:'iPadOS 18', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'2360 x 1640 (Liquid Retina)',
+        processor:'Apple M3',
+        ram:'8 ГБ',
+        storage:'128 ГБ',
+        camera:'12 МП',
+        cameraMP:12,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 9 часов',
+        weight:'462 г',
+        isSale: true,
+        popularity: 410
+    },
+    { 
+        id:6, 
+        name:'TCL NXTPAPER 11 Plus', 
+        price:1390, 
+        salePrice:1190,
+        oldPrice:1390,
+        image:'images/tcl-nxtpaper.png',
+        images:[
+            'images/tcl-nxtpaper-2.jpg',
+            'images/tcl-nxtpaper-3.jpg'
+        ],
+        category:'mid', 
+        brand:'TCL', 
+        color:'серый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'2000 x 1200 (NXTPAPER)',
+        processor:'MediaTek Helio G99',
+        ram:'4 ГБ',
+        storage:'128 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'480 г',
+        isSale: true,
+        popularity: 180
+    },
+    { 
+        id:7, 
+        name:'Samsung Galaxy Tab A9+', 
+        price:990, 
+        image:'images/samsung-a9.png',
+        images:[
+            'images/samsung-a9-2.jpg',
+            'images/samsung-a9-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'серебристый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'1920 x 1200 (TFT)',
+        processor:'Snapdragon 695',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 10 часов',
+        weight:'480 г',
+        isSale: false,
+        popularity: 355
+    },
+    { 
+        id:8, 
+        name:'Lenovo Tab P12', 
+        price:1590, 
+        image:'images/lenovo-tab-p12.png',
+        images:[
+            'images/lenovo-tab-p12-2.jpg',
+            'images/lenovo-tab-p12-3.jpeg'
+        ],
+        category:'mid', 
+        brand:'Lenovo', 
+        color:'серый', 
+        os:'Android 13', 
+        screen:'12.7"',
+        screenSize:12.7,
+        resolution:'2944 x 1840 (3K)',
+        processor:'MediaTek Dimensity 7050',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'13 МП',
+        cameraMP:13,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'615 г',
+        isSale: false,
+        popularity: 210
+    },
+    { 
+        id:9, 
+        name:'Samsung Galaxy Tab A7 Lite', 
+        price:650, 
+        image:'images/samsung-a7.jpg',
+        images:[
+            'images/samsung-a7-2.jpg',
+            'images/samsung-a7-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'черный', 
+        os:'Android 11', 
+        screen:'8.7"',
+        screenSize:8.7,
+        resolution:'1340 x 800 (TFT)',
+        processor:'MediaTek MT8768',
+        ram:'3 ГБ',
+        storage:'32 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 8 часов',
+        weight:'366 г',
+        isSale: false,
+        popularity: 344
+    },
+    { 
+        id:10, 
+        name:'Huawei MatePad T 8', 
+        price:590, 
+        image:'images/huawei-t8.jpg',
+        images:[
+            'images/huawei-t8-2.jpg',
+            'images/huawei-t8-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Huawei', 
+        color:'черный', 
+        os:'Android 10', 
+        screen:'8"',
+        screenSize:8,
+        resolution:'1280 x 800',
+        processor:'MediaTek MT8768',
+        ram:'2 ГБ',
+        storage:'16 ГБ',
+        camera:'5 МП',
+        cameraMP:5,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 7 часов',
+        weight:'350 г',
+        isSale: false,
+        popularity: 150
+    },
+    { 
+        id:11, 
+        name:'Samsung Galaxy Tab A8 10.5', 
+        price:850, 
+        image:'images/samsung-a8.jpg',
+        images:[
+            'images/samsung-a8-2.jpg',
+            'images/samsung-a8-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'темно-серый', 
+        os:'Android 11', 
+        screen:'10.5"',
+        screenSize:10.5,
+        resolution:'1920 x 1200 (TFT)',
+        processor:'Unisoc Tiger T618',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 9 часов',
+        weight:'508 г',
+        isSale: false,
+        popularity: 200
+    },
+    { 
+        id:12, 
+        name:'Samsung Galaxy Tab S6 Lite (2024)', 
+        price:1290, 
+        salePrice:990,
+        oldPrice:1290,
+        image:'images/samsung-s6-lite.jpg',
+        images:[
+            'images/samsung-s6-lite-2.jpg',
+            'images/samsung-s6-lite-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Samsung', 
+        color:'синий', 
+        os:'Android 14', 
+        screen:'10.4"',
+        screenSize:10.4,
+        resolution:'2000 x 1200 (TFT)',
+        processor:'Exynos 1280',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'465 г',
+        isSale: true,
+        popularity: 320
+    },
+    { 
+        id:13, 
+        name:'Samsung Galaxy Tab S9 FE', 
+        price:1890, 
+        image:'images/samsung-s9-fe.jpg',
+        images:[
+            'images/samsung-s9-fe-2.jpg',
+            'images/samsung-s9-fe-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Samsung', 
+        color:'белый', 
+        os:'Android 13', 
+        screen:'10.9"',
+        screenSize:10.9,
+        resolution:'2304 x 1440 (IPS, 90 Гц)',
+        processor:'Exynos 1380',
+        ram:'6 ГБ',
+        storage:'128 ГБ',
+        camera:'12 МП',
+        cameraMP:12,
+        camera2:'8 МП (ультраширокоугольная)',
+        camera2MP:8,
+        battery:'До 12 часов',
+        weight:'523 г',
+        isSale: false,
+        popularity: 97
+    },
+    { 
+        id:14, 
+        name:'Xiaomi Redmi Pad SE', 
+        price:890, 
+        image:'images/xiaomi-redmi.jpg',
+        images:[
+            'images/xiaomi-redmi-2.jpg',
+            'images/xiaomi-redmi-3.jpeg'
+        ],
+        category:'budget', 
+        brand:'Xiaomi', 
+        color:'зеленый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'1920 x 1200 (90 Гц)',
+        processor:'Snapdragon 680',
+        ram:'4 ГБ',
+        storage:'128 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'2 МП (макро)',
+        camera2MP:2,
+        battery:'До 12 часов',
+        weight:'478 г',
+        isSale: false,
+        popularity: 127
+    },
+    { 
+        id:15, 
+        name:'Lenovo Tab M10 HD', 
+        price:620, 
+        image:'images/lenovo-m10.jpg',
+        images:[
+            'images/lenovo-m10-2.jpg',
+            'images/lenovo-m10-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Lenovo', 
+        color:'серый', 
+        os:'Android 10', 
+        screen:'10.1"',
+        screenSize:10.1,
+        resolution:'1280 x 800',
+        processor:'MediaTek P22T',
+        ram:'2 ГБ',
+        storage:'32 ГБ',
+        camera:'5 МП',
+        cameraMP:5,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 8 часов',
+        weight:'420 г',
+        isSale: false,
+        popularity: 67
+    }
+];
+        // Инициализация хранилища пользователей
+        if (!localStorage.getItem('users')) {
+            // Создаём тестового пользователя для демо
+            const defaultUser = {
+                id: '1',
+                name: 'Анна',
+                surname: 'Иванова',
+                email: 'anna@example.com',
+                phone: '+375 29 123-45-67',
+                password: '123456',
+                addresses: []
+            };
+            localStorage.setItem('users', JSON.stringify([defaultUser]));
+        }
+
+        if (!localStorage.getItem('wishlist')) localStorage.setItem('wishlist', JSON.stringify([]));
+        if (!localStorage.getItem('cart')) localStorage.setItem('cart', JSON.stringify([]));
+        if (!localStorage.getItem('orders')) localStorage.setItem('orders', JSON.stringify([]));
+
+        // Текущий пользователь
+        let currentUser = null;
+        
+        // Проверяем, есть ли сохранённая сессия
+        const savedSession = localStorage.getItem('currentUser');
+        if (savedSession) {
+            currentUser = JSON.parse(savedSession);
+        }
+
+        // Обновление счётчиков
+        function updateCounters() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            // Обновляем иконку пользователя
+            const userIcon = document.getElementById('user-icon');
+            const userIconLink = document.getElementById('user-icon-link');
+            
+            if (currentUser) {
+                userIcon.className = 'fas fa-user';
+                userIconLink.href = 'account.html';
+            } else {
+                userIcon.className = 'far fa-user';
+                userIconLink.href = '#';
+            }
+        }
+
+        // Рендер популярных товаров
+        function renderPopular() {
+            const container = document.getElementById('popular-products');
+            if (!container) return;
+            container.innerHTML = '';
+            products.slice(0,4).forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="wishlist" data-id="${product.id}"><i class="far fa-heart"></i></div>
+                    <div class="product-image"><img src="${product.image}" alt="${product.name}" loading="lazy"></div>
+                    <div class="product-title">${product.name}</div>
+                    <div class="product-price">${product.price} BYN</div>
+                    <a href="product.html?id=${product.id}" class="quick-view">Подробнее</a>
+                `;
+                container.appendChild(card);
+            });
+            attachWishlistListeners();
+            syncWishlistUI();
+        }
+
+        // Работа с избранным
+        function toggleWishlist(id, element) {
+            let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            if (wishlist.includes(id)) {
+                wishlist = wishlist.filter(item => item !== id);
+                element.classList.remove('active');
+                element.querySelector('i').classList.replace('fas', 'far');
+            } else {
+                wishlist.push(id);
+                element.classList.add('active');
+                element.querySelector('i').classList.replace('far', 'fas');
+            }
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            updateCounters();
+        }
+
+        function handleWishlistClick(e) {
+            e.preventDefault();
+            const id = parseInt(this.dataset.id);
+            toggleWishlist(id, this);
+        }
+
+        function attachWishlistListeners() {
+            document.querySelectorAll('.wishlist').forEach(btn => {
+                btn.removeEventListener('click', handleWishlistClick);
+                btn.addEventListener('click', handleWishlistClick);
+            });
+        }
+
+        function syncWishlistUI() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            document.querySelectorAll('.wishlist').forEach(btn => {
+                const id = parseInt(btn.dataset.id);
+                if (wishlist.includes(id)) {
+                    btn.classList.add('active');
+                    btn.querySelector('i').classList.replace('far', 'fas');
+                }
+            });
+        }
+
+        // МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
+        const modal = document.getElementById('auth-modal');
+        const closeBtn = document.getElementById('close-auth');
+        const userIconLink = document.getElementById('user-icon-link');
+
+        // Открыть модалку при клике на иконку пользователя (если не авторизован)
+        userIconLink.addEventListener('click', (e) => {
+            if (!currentUser) {
+                e.preventDefault();
+                modal.classList.add('active');
+            }
+        });
+
+        // Закрыть модалку
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        // Переключение вкладок вход/регистрация
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                
+                this.classList.add('active');
+                const tabName = this.dataset.tab;
+                document.getElementById(`${tabName}-form`).classList.add('active');
+            });
+        });
+
+        // РЕГИСТРАЦИЯ
+        document.getElementById('register-btn').addEventListener('click', () => {
+            const name = document.getElementById('reg-name').value.trim();
+            const surname = document.getElementById('reg-surname').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const password2 = document.getElementById('reg-password2').value;
+            const errorEl = document.getElementById('register-error');
+
+            // Валидация
+            if (!name || !surname || !email || !phone || !password || !password2) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Все поля обязательны для заполнения';
+                return;
+            }
+
+            if (password !== password2) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Пароли не совпадают';
+                return;
+            }
+
+            // Проверка, существует ли уже пользователь с таким email
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            if (users.some(u => u.email === email)) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Пользователь с таким email уже существует';
+                return;
+            }
+
+            // Создаём нового пользователя
+            const newUser = {
+                id: Date.now().toString(),
+                name,
+                surname,
+                email,
+                phone,
+                password, // В реальном проекте пароль должен хешироваться!
+                addresses: []
+            };
+
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Автоматически входим
+            currentUser = newUser;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+            // Обновляем иконку и закрываем модалку
+            updateCounters();
+            modal.classList.remove('active');
+
+            // Очищаем форму
+            document.getElementById('register-form').querySelectorAll('input').forEach(i => i.value = '');
+            errorEl.style.display = 'none';
+
+            alert('Регистрация прошла успешно!');
+        });
+
+        // ВХОД
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+
+            if (!email || !password) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Введите email и пароль';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                updateCounters();
+                modal.classList.remove('active');
+                document.getElementById('login-form').querySelectorAll('input').forEach(i => i.value = '');
+                errorEl.style.display = 'none';
+                alert('Вход выполнен успешно!');
+            } else {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Неверный email или пароль';
+            }
+        });
+
+        // Закрытие модалки при клике вне её
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // Загрузка
+        window.addEventListener('load', () => {
+            renderPopular();
+            updateCounters();
+            syncWishlistUI();
+        });
+    </script>
+</body>
+</html>

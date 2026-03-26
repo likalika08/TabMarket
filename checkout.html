@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа - TabMarket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+        body { background:#fff; color:#333; }
+        .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+        
+        /* Шапка */
+        header { background:white; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:15px 0; flex-wrap:wrap; }
+        .logo a { font-size:24px; font-weight:600; color:#1A2B4C; text-decoration:none; }
+        .logo span { color:#0066CC; }
+        nav ul { display:flex; list-style:none; gap:20px; flex-wrap:wrap; }
+        nav a { text-decoration:none; color:#333; font-weight:500; }
+        nav a:hover, nav a.active { color:#0066CC; }
+        .user-actions { display:flex; gap:15px; align-items:center; }
+        .user-actions a { color:#333; text-decoration:none; font-size:18px; position:relative; }
+        .cart-count, .wishlist-count { background:#0066CC; color:white; border-radius:50%; padding:2px 6px; font-size:11px; position:absolute; top:-8px; right:-10px; }
+        
+        /* Хлебные крошки */
+        .breadcrumbs { margin:20px 0; color:#777; font-size:14px; }
+        .breadcrumbs a { color:#0066CC; text-decoration:none; }
+        
+        /* Заголовок страницы */
+        .page-title { font-size:36px; color:#1A2B4C; margin:30px 0 40px; padding-bottom:15px; border-bottom:3px solid #0066CC; width:fit-content; }
+        
+        /* Сетка оформления заказа */
+        .checkout-layout { display:grid; grid-template-columns:1fr 380px; gap:30px; margin-bottom:60px; }
+        
+        /* Форма оформления */
+        .checkout-form { background:#f8f9fc; border-radius:20px; padding:30px; border:1px solid #eef2f7; }
+        .form-section { margin-bottom:30px; padding-bottom:30px; border-bottom:1px solid #d0ddee; }
+        .form-section:last-child { border-bottom:none; padding-bottom:0; }
+        .form-section h2 { font-size:20px; color:#1A2B4C; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+        .form-section h2 i { color:#0066CC; }
+        
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px; }
+        .form-group { margin-bottom:15px; }
+        .form-group label { display:block; margin-bottom:8px; font-weight:500; color:#1A2B4C; }
+        .form-group input, .form-group select, .form-group textarea {
+            width:100%; padding:12px 15px; border:1px solid #d0ddee; border-radius:30px; font-size:15px;
+            outline:none; transition:0.2s; background:white;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color:#0066CC; box-shadow:0 0 0 3px rgba(0,102,204,0.1);
+        }
+        .form-group textarea { border-radius:20px; resize:vertical; min-height:100px; }
+        
+        /* Способы доставки и оплаты */
+        .payment-methods, .delivery-methods {
+            display:flex; flex-direction:column; gap:12px; margin-bottom:20px;
+        }
+        .payment-option, .delivery-option {
+            display:flex; align-items:center; gap:12px; padding:12px 15px;
+            background:white; border:1px solid #d0ddee; border-radius:30px; cursor:pointer;
+            transition:0.2s;
+        }
+        .payment-option:hover, .delivery-option:hover {
+            border-color:#0066CC; background:#f0f7ff;
+        }
+        .payment-option input[type="radio"], .delivery-option input[type="radio"] {
+            width:18px; height:18px; accent-color:#0066CC;
+        }
+        .payment-option label, .delivery-option label {
+            flex:1; cursor:pointer; font-weight:500;
+        }
+        .payment-option i, .delivery-option i {
+            color:#0066CC; font-size:20px; width:24px;
+        }
+        
+        /* Блок с товарами */
+        .order-summary {
+            background:#f8f9fc; border-radius:20px; padding:25px; border:1px solid #eef2f7; align-self:start;
+            position:sticky; top:100px;
+        }
+        .order-summary h2 { font-size:20px; color:#1A2B4C; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+        .order-summary h2 i { color:#0066CC; }
+        
+        .order-items { margin-bottom:20px; max-height:400px; overflow-y:auto; padding-right:10px; }
+        .order-item {
+            display:flex; gap:12px; padding:15px 0; border-bottom:1px solid #eef2f7;
+        }
+        .order-item:last-child { border-bottom:none; }
+        .order-item-image {
+            width:70px; height:70px; background:white; border-radius:12px;
+            display:flex; align-items:center; justify-content:center; border:1px solid #eef2f7;
+            flex-shrink:0;
+        }
+        .order-item-image img { max-width:60px; max-height:60px; object-fit:contain; }
+        .order-item-info { flex:1; }
+        .order-item-name { font-weight:600; margin-bottom:5px; color:#1A2B4C; }
+        .order-item-price { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .current-price { color:#0066CC; font-weight:700; }
+        .old-price { color:#999; text-decoration:line-through; font-size:13px; }
+        .sale-badge { 
+            background:#ff4444; color:white; padding:2px 8px; border-radius:20px; 
+            font-size:11px; font-weight:600; margin-left:5px;
+        }
+        .order-item-quantity { color:#777; font-size:13px; margin-left:5px; }
+        
+        .order-total {
+            border-top:2px solid #d0ddee; padding-top:20px; margin-top:10px;
+        }
+        .total-row {
+            display:flex; justify-content:space-between; margin-bottom:10px; font-size:16px;
+        }
+        .total-saved {
+            color:#ff4444; font-size:14px; text-align:right; margin-top:5px;
+        }
+        .total-row.grand-total {
+            font-size:22px; font-weight:700; color:#1A2B4C; margin-top:15px; padding-top:15px;
+            border-top:2px solid #d0ddee;
+        }
+        
+        .btn-submit {
+            width:100%; background:#0066CC; color:white; border:none; padding:15px; border-radius:40px;
+            font-size:18px; font-weight:600; cursor:pointer; transition:0.3s; margin-top:20px;
+        }
+        .btn-submit:hover { background:#1A2B4C; }
+        
+        footer { background:#1A2B4C; color:white; padding:40px 0; margin-top:60px; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:30px; }
+        .footer-col h4 { margin-bottom:15px; }
+        .footer-col a { color:#ccc; text-decoration:none; display:block; margin-bottom:8px; }
+        .footer-col a:hover { color:white; }
+        
+        .login-required {
+            text-align:center; padding:60px 20px; background:#f8f9fc; border-radius:20px;
+        }
+        .login-required i { font-size:64px; color:#0066CC; margin-bottom:20px; }
+        .login-required h2 { font-size:24px; color:#1A2B4C; margin-bottom:15px; }
+        .login-required p { color:#666; margin-bottom:30px; }
+        .btn { display:inline-block; background:#0066CC; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:600; }
+        
+        @media (max-width:900px) {
+            .checkout-layout { grid-template-columns:1fr; }
+            .form-row { grid-template-columns:1fr; }
+            .order-summary { position:static; }
+        }
+        @media (max-width:768px) {
+            .header-inner { flex-direction:column; gap:10px; }
+            nav ul { justify-content:center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <div class="logo"><a href="index.html">Tab<span>Market</span></a></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="delivery.html">Доставка</a></li>
+                    <li><a href="sales.html">Акции</a></li>
+                    <li><a href="about.html">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <a href="search.html"><i class="fas fa-search"></i></a>
+                <a href="wishlist.html">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count" id="wishlist-count">0</span>
+                </a>
+                <a href="cart.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="account.html" id="user-icon"><i class="far fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="index.html">Главная</a> / <a href="cart.html">Корзина</a> / <span>Оформление заказа</span>
+        </div>
+
+        <h1 class="page-title">Оформление заказа</h1>
+
+        <div id="checkout-content">
+            <!-- Содержимое загружается динамически -->
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>TabMarket</h4>
+                <p>Специализированный магазин планшетов</p>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a href="about.html">О компании</a>
+                <a href="delivery.html">Доставка</a>
+                <a href="contacts.html">Контакты</a>
+            </div>
+            <div class="footer-col">
+                <h4>Помощь</h4>
+                <a href="delivery.html#faq-section">Вопрос-ответ</a>
+                <a href="delivery.html#returns">Возврат</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-phone"></i> +375 29 123-45-67</p>
+                <p><i class="fas fa-envelope"></i> info@tabmarket.by</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ПОЛНЫЙ МАССИВ ПРОДУКТОВ
+        const products = [
+    { 
+        id:1, 
+        name:'Apple iPad Pro 12.9 (2025)', 
+        price:3990, 
+        salePrice:3590,
+        oldPrice:3990,
+        image:'images/ipad-pro.png',
+        images:[
+            'images/ipad-pro-2.jpg',
+            'images/ipad-pro-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Apple', 
+        color:'серый космос', 
+        os:'iPadOS 18', 
+        screen:'12.9"',
+        screenSize:12.9,
+        resolution:'2732 x 2048 (Liquid Retina XDR)',
+        processor:'Apple M2 (8 ядер)',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'12 МП (широкоугольная) + LiDAR',
+        cameraMP:12,
+        camera2:'LiDAR сканер',
+        camera2MP:0,
+        battery:'До 10 часов',
+        weight:'682 г',
+        isSale: true,
+        popularity: 450 // условный рейтинг популярности
+    },
+    { 
+        id:2, 
+        name:'Samsung Galaxy Tab S9+', 
+        price:3450, 
+        salePrice:2990,
+        oldPrice:3450,
+        image:'images/samsung-tab-s9.png',
+        images:[
+            'images/samsung-tab-s9-2.jpg',
+            'images/samsung-tab-s9-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Samsung', 
+        color:'бежевый', 
+        os:'Android 14 (One UI 6.1)', 
+        screen:'12.4"',
+        screenSize:12.4,
+        resolution:'2800 x 1752 (Dynamic AMOLED 2X, 120 Гц)',
+        processor:'Snapdragon 8 Gen 2',
+        ram:'12 ГБ',
+        storage:'256 ГБ',
+        camera:'13 МП + 8 МП (ультраширокоугольная)',
+        cameraMP:13,
+        camera2:'8 МП',
+        camera2MP:8,
+        battery:'До 12 часов',
+        weight:'586 г',
+        isSale: true,
+        popularity: 488
+    },
+    { 
+        id:3, 
+        name:'Huawei MatePad 11.5 PaperMatte', 
+        price:1690, 
+        salePrice:1430,
+        oldPrice:1690,
+        image:'images/huawei-matepad.png',
+        images:[
+            'images/huawei-matepad-2.jpg',
+            'images/huawei-matepad-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Huawei', 
+        color:'серый', 
+        os:'HarmonyOS 3.0', 
+        screen:'11.5"',
+        screenSize:11.5,
+        resolution:'2200 x 1440 (PaperMatte Display)',
+        processor:'Snapdragon 7 Gen 1',
+        ram:'6 ГБ',
+        storage:'128 ГБ',
+        camera:'13 МП',
+        cameraMP:13,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 11 часов',
+        weight:'499 г',
+        isSale: true,
+        popularity: 320
+    },
+    { 
+        id:4, 
+        name:'Xiaomi Pad 6S Pro', 
+        price:2290, 
+        salePrice:1990,
+        oldPrice:2290,
+        image:'images/xiaomi-pad.png',
+        images:[
+            'images/xiaomi-pad-2.jpg',
+            'images/xiaomi-pad-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Xiaomi', 
+        color:'черный', 
+        os:'Android 14 (HyperOS)', 
+        screen:'12.4"',
+        screenSize:12.4,
+        resolution:'3048 x 2032 (144 Гц)',
+        processor:'Snapdragon 8 Gen 2',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'50 МП',
+        cameraMP:50,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 14 часов',
+        weight:'590 г',
+        isSale: true,
+        popularity: 280
+    },
+    { 
+        id:5, 
+        name:'Apple iPad Air 11" M3', 
+        price:2490, 
+        salePrice:2240,
+        oldPrice:2490,
+        image:'images/ipad-air.png',
+        images:[
+            'images/ipad-air-2.jpg',
+            'images/ipad-air-3.jpg'
+        ],
+        category:'premium', 
+        brand:'Apple', 
+        color:'синий', 
+        os:'iPadOS 18', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'2360 x 1640 (Liquid Retina)',
+        processor:'Apple M3',
+        ram:'8 ГБ',
+        storage:'128 ГБ',
+        camera:'12 МП',
+        cameraMP:12,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 9 часов',
+        weight:'462 г',
+        isSale: true,
+        popularity: 410
+    },
+    { 
+        id:6, 
+        name:'TCL NXTPAPER 11 Plus', 
+        price:1390, 
+        salePrice:1190,
+        oldPrice:1390,
+        image:'images/tcl-nxtpaper.png',
+        images:[
+            'images/tcl-nxtpaper-2.jpg',
+            'images/tcl-nxtpaper-3.jpg'
+        ],
+        category:'mid', 
+        brand:'TCL', 
+        color:'серый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'2000 x 1200 (NXTPAPER)',
+        processor:'MediaTek Helio G99',
+        ram:'4 ГБ',
+        storage:'128 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'480 г',
+        isSale: true,
+        popularity: 180
+    },
+    { 
+        id:7, 
+        name:'Samsung Galaxy Tab A9+', 
+        price:990, 
+        image:'images/samsung-a9.png',
+        images:[
+            'images/samsung-a9-2.jpg',
+            'images/samsung-a9-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'серебристый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'1920 x 1200 (TFT)',
+        processor:'Snapdragon 695',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 10 часов',
+        weight:'480 г',
+        isSale: false,
+        popularity: 355
+    },
+    { 
+        id:8, 
+        name:'Lenovo Tab P12', 
+        price:1590, 
+        image:'images/lenovo-tab-p12.png',
+        images:[
+            'images/lenovo-tab-p12-2.jpg',
+            'images/lenovo-tab-p12-3.jpeg'
+        ],
+        category:'mid', 
+        brand:'Lenovo', 
+        color:'серый', 
+        os:'Android 13', 
+        screen:'12.7"',
+        screenSize:12.7,
+        resolution:'2944 x 1840 (3K)',
+        processor:'MediaTek Dimensity 7050',
+        ram:'8 ГБ',
+        storage:'256 ГБ',
+        camera:'13 МП',
+        cameraMP:13,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'615 г',
+        isSale: false,
+        popularity: 210
+    },
+    { 
+        id:9, 
+        name:'Samsung Galaxy Tab A7 Lite', 
+        price:650, 
+        image:'images/samsung-a7.jpg',
+        images:[
+            'images/samsung-a7-2.jpg',
+            'images/samsung-a7-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'черный', 
+        os:'Android 11', 
+        screen:'8.7"',
+        screenSize:8.7,
+        resolution:'1340 x 800 (TFT)',
+        processor:'MediaTek MT8768',
+        ram:'3 ГБ',
+        storage:'32 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 8 часов',
+        weight:'366 г',
+        isSale: false,
+        popularity: 344
+    },
+    { 
+        id:10, 
+        name:'Huawei MatePad T 8', 
+        price:590, 
+        image:'images/huawei-t8.jpg',
+        images:[
+            'images/huawei-t8-2.jpg',
+            'images/huawei-t8-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Huawei', 
+        color:'черный', 
+        os:'Android 10', 
+        screen:'8"',
+        screenSize:8,
+        resolution:'1280 x 800',
+        processor:'MediaTek MT8768',
+        ram:'2 ГБ',
+        storage:'16 ГБ',
+        camera:'5 МП',
+        cameraMP:5,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 7 часов',
+        weight:'350 г',
+        isSale: false,
+        popularity: 150
+    },
+    { 
+        id:11, 
+        name:'Samsung Galaxy Tab A8 10.5', 
+        price:850, 
+        image:'images/samsung-a8.jpg',
+        images:[
+            'images/samsung-a8-2.jpg',
+            'images/samsung-a8-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Samsung', 
+        color:'темно-серый', 
+        os:'Android 11', 
+        screen:'10.5"',
+        screenSize:10.5,
+        resolution:'1920 x 1200 (TFT)',
+        processor:'Unisoc Tiger T618',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 9 часов',
+        weight:'508 г',
+        isSale: false,
+        popularity: 200
+    },
+    { 
+        id:12, 
+        name:'Samsung Galaxy Tab S6 Lite (2024)', 
+        price:1290, 
+        salePrice:990,
+        oldPrice:1290,
+        image:'images/samsung-s6-lite.jpg',
+        images:[
+            'images/samsung-s6-lite-2.jpg',
+            'images/samsung-s6-lite-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Samsung', 
+        color:'синий', 
+        os:'Android 14', 
+        screen:'10.4"',
+        screenSize:10.4,
+        resolution:'2000 x 1200 (TFT)',
+        processor:'Exynos 1280',
+        ram:'4 ГБ',
+        storage:'64 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 12 часов',
+        weight:'465 г',
+        isSale: true,
+        popularity: 320
+    },
+    { 
+        id:13, 
+        name:'Samsung Galaxy Tab S9 FE', 
+        price:1890, 
+        image:'images/samsung-s9-fe.jpg',
+        images:[
+            'images/samsung-s9-fe-2.jpg',
+            'images/samsung-s9-fe-3.jpg'
+        ],
+        category:'mid', 
+        brand:'Samsung', 
+        color:'белый', 
+        os:'Android 13', 
+        screen:'10.9"',
+        screenSize:10.9,
+        resolution:'2304 x 1440 (IPS, 90 Гц)',
+        processor:'Exynos 1380',
+        ram:'6 ГБ',
+        storage:'128 ГБ',
+        camera:'12 МП',
+        cameraMP:12,
+        camera2:'8 МП (ультраширокоугольная)',
+        camera2MP:8,
+        battery:'До 12 часов',
+        weight:'523 г',
+        isSale: false,
+        popularity: 97
+    },
+    { 
+        id:14, 
+        name:'Xiaomi Redmi Pad SE', 
+        price:890, 
+        image:'images/xiaomi-redmi.jpg',
+        images:[
+            'images/xiaomi-redmi-2.jpg',
+            'images/xiaomi-redmi-3.jpeg'
+        ],
+        category:'budget', 
+        brand:'Xiaomi', 
+        color:'зеленый', 
+        os:'Android 13', 
+        screen:'11"',
+        screenSize:11,
+        resolution:'1920 x 1200 (90 Гц)',
+        processor:'Snapdragon 680',
+        ram:'4 ГБ',
+        storage:'128 ГБ',
+        camera:'8 МП',
+        cameraMP:8,
+        camera2:'2 МП (макро)',
+        camera2MP:2,
+        battery:'До 12 часов',
+        weight:'478 г',
+        isSale: false,
+        popularity: 127
+    },
+    { 
+        id:15, 
+        name:'Lenovo Tab M10 HD', 
+        price:620, 
+        image:'images/lenovo-m10.jpg',
+        images:[
+            'images/lenovo-m10-2.jpg',
+            'images/lenovo-m10-3.jpg'
+        ],
+        category:'budget', 
+        brand:'Lenovo', 
+        color:'серый', 
+        os:'Android 10', 
+        screen:'10.1"',
+        screenSize:10.1,
+        resolution:'1280 x 800',
+        processor:'MediaTek P22T',
+        ram:'2 ГБ',
+        storage:'32 ГБ',
+        camera:'5 МП',
+        cameraMP:5,
+        camera2:'нет',
+        camera2MP:0,
+        battery:'До 8 часов',
+        weight:'420 г',
+        isSale: false,
+        popularity: 67
+    }
+];
+        let currentUser = null;
+
+        function loadSession() {
+            const session = localStorage.getItem('currentUser');
+            if (session) {
+                currentUser = JSON.parse(session);
+            }
+        }
+
+        function updateCounters() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            const userIcon = document.getElementById('user-icon');
+            if (currentUser) {
+                userIcon.innerHTML = '<i class="fas fa-user"></i>';
+            } else {
+                userIcon.innerHTML = '<i class="far fa-user"></i>';
+            }
+        }
+
+        function checkAuth() {
+            loadSession();
+            if (!currentUser) {
+                document.getElementById('checkout-content').innerHTML = `
+                    <div class="login-required">
+                        <i class="fas fa-lock"></i>
+                        <h2>Необходима авторизация</h2>
+                        <p>Чтобы оформить заказ, пожалуйста, войдите в свой аккаунт</p>
+                        <a href="index.html" class="btn">Вернуться на главную</a>
+                    </div>
+                `;
+                return false;
+            }
+            return true;
+        }
+
+        function loadCheckoutForm() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            let subtotal = 0;
+            let originalTotal = 0; // сумма без скидок
+            let itemsHtml = '';
+            
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id) || item;
+                
+                // Определяем цену (с учётом акции)
+                const itemPrice = product.isSale ? product.salePrice : product.price;
+                const itemOldPrice = product.isSale ? product.oldPrice : null;
+                const itemSum = itemPrice * item.quantity;
+                const itemOriginalSum = (product.isSale ? product.price : product.price) * item.quantity;
+                
+                subtotal += itemSum;
+                originalTotal += itemOriginalSum;
+                
+                itemsHtml += `
+                    <div class="order-item">
+                        <div class="order-item-image">
+                            <img src="${product.image}" alt="${product.name}">
+                        </div>
+                        <div class="order-item-info">
+                            <div class="order-item-name">${product.name}</div>
+                            <div class="order-item-price">
+                                <span class="current-price">${itemPrice} BYN</span>
+                                ${itemOldPrice ? `<span class="old-price">${itemOldPrice} BYN</span>` : ''}
+                                ${product.isSale ? '<span class="sale-badge">Акция</span>' : ''}
+                                <span class="order-item-quantity">x${item.quantity}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const savedAmount = originalTotal - subtotal;
+            const addresses = currentUser?.addresses || [];
+
+            let addressOptions = '<option value="">Выберите адрес</option>';
+            addresses.forEach((addr, index) => {
+                addressOptions += `<option value="${index}">${addr.city}, ${addr.street}, д.${addr.house}${addr.apartment ? ', кв.' + addr.apartment : ''}</option>`;
+            });
+
+            const html = `
+                <div class="checkout-layout">
+                    <div class="checkout-form">
+                        <form id="checkout-form">
+                            <div class="form-section">
+                                <h2><i class="fas fa-user"></i> Контактная информация</h2>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Имя *</label>
+                                        <input type="text" id="name" value="${currentUser.name || ''}" required placeholder="Введите ваше имя">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Фамилия *</label>
+                                        <input type="text" id="surname" value="${currentUser.surname || ''}" required placeholder="Введите фамилию">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Телефон *</label>
+                                        <input type="tel" id="phone" value="${currentUser.phone || ''}" required placeholder="+375 (29) 123-45-67">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email *</label>
+                                        <input type="email" id="email" value="${currentUser.email || ''}" required placeholder="example@mail.com">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h2><i class="fas fa-truck"></i> Способ доставки</h2>
+                                <div class="delivery-methods">
+                                    <div class="delivery-option">
+                                        <input type="radio" name="delivery" id="delivery-courier" value="courier" checked>
+                                        <i class="fas fa-rocket"></i>
+                                        <label for="delivery-courier">
+                                            <strong>Курьером</strong><br>
+                                            <small>По Минску — 5 BYN, завтра</small>
+                                        </label>
+                                    </div>
+                                    <div class="delivery-option">
+                                        <input type="radio" name="delivery" id="delivery-pickup" value="pickup">
+                                        <i class="fas fa-store"></i>
+                                        <label for="delivery-pickup">
+                                            <strong>Самовывоз</strong><br>
+                                            <small>г. Минск, ул. Интернетная, 1 — бесплатно</small>
+                                        </label>
+                                    </div>
+                                    <div class="delivery-option">
+                                        <input type="radio" name="delivery" id="delivery-post" value="post">
+                                        <i class="fas fa-box-open"></i>
+                                        <label for="delivery-post">
+                                            <strong>Почта / Постамат</strong><br>
+                                            <small>От 5 BYN, 2-4 дня</small>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="address-select-block" style="margin-top:20px; ${addresses.length ? 'display:block;' : 'display:none;'}">
+                                    <div class="form-group">
+                                        <label>Выберите адрес доставки</label>
+                                        <select id="address-select">
+                                            ${addressOptions}
+                                        </select>
+                                    </div>
+                                    <p><a href="account.html#addresses" style="color:#0066CC;">+ Добавить новый адрес</a></p>
+                                </div>
+
+                                <div id="address-fields" style="margin-top:20px; ${addresses.length ? 'display:none;' : 'display:block;'}">
+                                    <div class="form-group">
+                                        <label>Город *</label>
+                                        <input type="text" id="city" placeholder="Минск">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Улица *</label>
+                                            <input type="text" id="street" placeholder="ул. Интернетная">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Дом *</label>
+                                            <input type="text" id="house" placeholder="1">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Квартира</label>
+                                            <input type="text" id="apartment" placeholder="42">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Этаж</label>
+                                            <input type="text" id="floor" placeholder="5">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h2><i class="fas fa-credit-card"></i> Способ оплаты</h2>
+                                <div class="payment-methods">
+                                    <div class="payment-option">
+                                        <input type="radio" name="payment" id="payment-card" value="card" checked>
+                                        <i class="fas fa-credit-card"></i>
+                                        <label for="payment-card">Банковской картой онлайн</label>
+                                    </div>
+                                    <div class="payment-option">
+                                        <input type="radio" name="payment" id="payment-cash" value="cash">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <label for="payment-cash">Наличными курьеру</label>
+                                    </div>
+                                    <div class="payment-option">
+                                        <input type="radio" name="payment" id="payment-installment" value="installment">
+                                        <i class="fas fa-credit-card"></i>
+                                        <label for="payment-installment">Карта рассрочки</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h2><i class="fas fa-comment"></i> Комментарий к заказу</h2>
+                                <div class="form-group">
+                                    <textarea id="comment" placeholder="Укажите удобное время доставки, код домофона и т.д."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="order-summary">
+                        <h2><i class="fas fa-shopping-bag"></i> Ваш заказ</h2>
+                        
+                        <div class="order-items">
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="order-total">
+                            <div class="total-row">
+                                <span>Товары:</span>
+                                <span>${subtotal} BYN</span>
+                            </div>
+                            ${savedAmount > 0 ? `
+                            <div class="total-row" style="color:#ff4444;">
+                                <span>Скидка по акциям:</span>
+                                <span>-${savedAmount} BYN</span>
+                            </div>
+                            ` : ''}
+                            <div class="total-row">
+                                <span>Доставка:</span>
+                                <span id="delivery-cost">5 BYN</span>
+                            </div>
+                            <div class="total-saved" id="saved-amount" style="${savedAmount > 0 ? '' : 'display:none;'}">
+                                Вы экономите ${savedAmount} BYN
+                            </div>
+                            <div class="total-row grand-total">
+                                <span>Итого:</span>
+                                <span id="total">${subtotal + 5} BYN</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" form="checkout-form" class="btn-submit">Подтвердить заказ</button>
+                        
+                        <p style="text-align:center; margin-top:15px; font-size:13px; color:#777;">
+                            Нажимая "Подтвердить заказ", вы соглашаетесь с условиями обработки персональных данных
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('checkout-content').innerHTML = html;
+            attachCheckoutHandlers(subtotal, savedAmount);
+        }
+
+        function attachCheckoutHandlers(subtotal, savedAmount) {
+            document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const addressSelect = document.getElementById('address-select-block');
+                    const addressFields = document.getElementById('address-fields');
+                    const addresses = currentUser?.addresses || [];
+                    
+                    if (this.value === 'courier') {
+                        if (addresses.length > 0) {
+                            addressSelect.style.display = 'block';
+                            addressFields.style.display = 'none';
+                        } else {
+                            addressSelect.style.display = 'none';
+                            addressFields.style.display = 'block';
+                        }
+                    } else {
+                        addressSelect.style.display = 'none';
+                        addressFields.style.display = 'none';
+                    }
+                    
+                    updateTotal(subtotal);
+                });
+            });
+
+            function updateTotal(baseSubtotal) {
+                const deliveryMethod = document.querySelector('input[name="delivery"]:checked')?.value;
+                let deliveryCost = 0;
+                
+                if (deliveryMethod === 'courier') deliveryCost = 5;
+                else if (deliveryMethod === 'pickup') deliveryCost = 0;
+                else if (deliveryMethod === 'post') deliveryCost = 5;
+                
+                document.getElementById('delivery-cost').innerText = deliveryCost + ' BYN';
+                document.getElementById('total').innerText = (baseSubtotal + deliveryCost) + ' BYN';
+            }
+
+            document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+                radio.addEventListener('change', () => updateTotal(subtotal));
+            });
+
+            document.getElementById('checkout-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                let address = {};
+                const deliveryMethod = document.querySelector('input[name="delivery"]:checked')?.value;
+                
+                if (deliveryMethod === 'courier') {
+                    const addressSelect = document.getElementById('address-select');
+                    const addresses = currentUser?.addresses || [];
+                    
+                    if (addressSelect && addressSelect.value !== '') {
+                        address = addresses[addressSelect.value];
+                    } else {
+                        address = {
+                            city: document.getElementById('city').value,
+                            street: document.getElementById('street').value,
+                            house: document.getElementById('house').value,
+                            apartment: document.getElementById('apartment').value,
+                            floor: document.getElementById('floor').value
+                        };
+                    }
+                }
+
+                // Получаем актуальные товары из корзины с акционными ценами
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const itemsWithPrices = cart.map(item => {
+                    const product = products.find(p => p.id === item.id) || item;
+                    return {
+                        ...item,
+                        price: product.isSale ? product.salePrice : product.price,
+                        originalPrice: product.isSale ? product.price : null,
+                        isSale: product.isSale || false
+                    };
+                });
+
+                const formData = {
+                    userId: currentUser.id,
+                    name: document.getElementById('name').value,
+                    surname: document.getElementById('surname').value,
+                    phone: document.getElementById('phone').value,
+                    email: document.getElementById('email').value,
+                    delivery: deliveryMethod,
+                    payment: document.querySelector('input[name="payment"]:checked')?.value,
+                    address: address,
+                    comment: document.getElementById('comment').value,
+                    items: itemsWithPrices,
+                    subtotal: subtotal,
+                    savedAmount: savedAmount,
+                    deliveryCost: parseInt(document.getElementById('delivery-cost').innerText) || 0,
+                    total: document.getElementById('total').innerText,
+                    date: new Date().toLocaleString('ru-RU')
+                };
+
+                if (!formData.name || !formData.surname || !formData.phone || !formData.email) {
+                    alert('Пожалуйста, заполните все обязательные поля');
+                    return;
+                }
+
+                if (deliveryMethod === 'courier') {
+                    if (!address.city || !address.street || !address.house) {
+                        alert('Пожалуйста, укажите полный адрес доставки');
+                        return;
+                    }
+                }
+
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                orders.push(formData);
+                localStorage.setItem('orders', JSON.stringify(orders));
+
+                localStorage.setItem('cart', JSON.stringify([]));
+
+                alert('Заказ успешно оформлен! Спасибо за покупку.');
+                window.location.href = 'account.html#orders';
+            });
+        }
+
+        window.addEventListener('load', () => {
+            loadSession();
+            updateCounters();
+            if (checkAuth()) {
+                loadCheckoutForm();
+            }
+        });
+    </script>
+</body>
+</html>

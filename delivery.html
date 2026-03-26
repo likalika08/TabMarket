@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доставка и оплата - TabMarket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Roboto,sans-serif; }
+        body { background:#fff; color:#333; }
+        .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+        
+        /* Шапка */
+        header { background:white; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .header-inner { display:flex; align-items:center; justify-content:space-between; padding:15px 0; flex-wrap:wrap; }
+        .logo a { font-size:24px; font-weight:600; color:#1A2B4C; text-decoration:none; }
+        .logo span { color:#0066CC; }
+        nav ul { display:flex; list-style:none; gap:20px; flex-wrap:wrap; }
+        nav a { text-decoration:none; color:#333; font-weight:500; }
+        nav a:hover, nav a.active { color:#0066CC; }
+        .user-actions { display:flex; gap:15px; align-items:center; }
+        .user-actions a { color:#333; text-decoration:none; font-size:18px; position:relative; }
+        .cart-count, .wishlist-count { background:#0066CC; color:white; border-radius:50%; padding:2px 6px; font-size:11px; position:absolute; top:-8px; right:-10px; }
+        
+        /* Хлебные крошки */
+        .breadcrumbs { margin:20px 0; color:#777; font-size:14px; }
+        .breadcrumbs a { color:#0066CC; text-decoration:none; }
+        .breadcrumbs span { color:#333; }
+        
+        /* Заголовок страницы */
+        .page-title { font-size:36px; color:#1A2B4C; margin:30px 0 40px; padding-bottom:15px; border-bottom:3px solid #0066CC; width:fit-content; }
+        
+        /* Сетка с карточками */
+        .delivery-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:30px; margin-bottom:50px; }
+        .delivery-card { background:#f8f9fc; border-radius:20px; padding:30px; border:1px solid #eef2f7; transition:0.3s; }
+        .delivery-card:hover { box-shadow:0 15px 30px rgba(0,102,204,0.1); transform:translateY(-5px); }
+        .delivery-icon { font-size:48px; color:#0066CC; margin-bottom:20px; }
+        .delivery-card h2 { font-size:24px; color:#1A2B4C; margin-bottom:20px; }
+        .delivery-card h3 { font-size:18px; color:#1A2B4C; margin:15px 0 10px; }
+        .delivery-card ul { list-style:none; }
+        .delivery-card li { margin-bottom:12px; padding-left:28px; position:relative; }
+        .delivery-card li i { color:#0066CC; position:absolute; left:0; top:3px; width:20px; }
+        .delivery-card p { margin-bottom:10px; line-height:1.6; }
+        
+        /* Блок с важной информацией */
+        .info-box { background:linear-gradient(135deg,#0066CC10,#1A2B4C10); border-radius:20px; padding:40px; margin:40px 0; border-left:5px solid #0066CC; }
+        .info-box h3 { font-size:22px; color:#1A2B4C; margin-bottom:20px; }
+        .info-box p { margin-bottom:15px; line-height:1.6; }
+        .info-box i { color:#0066CC; margin-right:10px; }
+        
+        /* Таблица способов оплаты */
+        .payment-table { width:100%; border-collapse:collapse; margin:30px 0; background:#f8f9fc; border-radius:16px; overflow:hidden; }
+        .payment-table th { background:#0066CC; color:white; padding:15px; text-align:left; font-weight:600; }
+        .payment-table td { padding:15px; border-bottom:1px solid #eef2f7; }
+        .payment-table tr:last-child td { border-bottom:none; }
+        .payment-table i { color:#0066CC; width:25px; }
+        
+        /* Часто задаваемые вопросы */
+        .faq-section { margin:50px 0; }
+        .faq-item { background:#f8f9fc; border-radius:16px; padding:20px; margin-bottom:15px; border:1px solid #eef2f7; }
+        .faq-question { font-size:18px; font-weight:600; color:#1A2B4C; margin-bottom:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+        .faq-question i { transition:0.3s; color:#0066CC; }
+        .faq-answer { color:#555; line-height:1.6; display:none; padding-top:10px; border-top:1px solid #d0ddee; }
+        .faq-item.active .faq-answer { display:block; }
+        .faq-item.active .faq-question i { transform:rotate(180deg); }
+        
+        /* Якоря для навигации */
+        #returns, #faq-section { scroll-margin-top: 100px; }
+        
+        /* Кнопки */
+        .btn { display:inline-block; background:#0066CC; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:600; transition:0.3s; border:none; cursor:pointer; }
+        .btn:hover { background:#1A2B4C; }
+        .btn-outline { background:transparent; border:2px solid #0066CC; color:#0066CC; padding:10px 25px; }
+        .btn-outline:hover { background:#0066CC; color:white; }
+        
+        /* Подвал (унифицированный) */
+        footer { background:#1A2B4C; color:white; padding:40px 0; margin-top:60px; }
+        .footer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:30px; }
+        .footer-col h4 { margin-bottom:15px; color:white; }
+        .footer-col a { color:#ccc; text-decoration:none; display:block; margin-bottom:8px; transition:0.2s; }
+        .footer-col a:hover { color:white; }
+        .footer-contacts i { width:20px; margin-right:8px; color:#0066CC; }
+        
+        @media (max-width:768px) {
+            .header-inner { flex-direction:column; gap:10px; }
+            nav ul { justify-content:center; }
+            .delivery-grid { grid-template-columns:1fr; }
+            .payment-table { font-size:14px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <div class="logo"><a href="index.html">Tab<span>Market</span></a></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="delivery.html" class="active">Доставка</a></li>
+                    <li><a href="sales.html">Акции</a></li>
+                    <li><a href="about.html">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <a href="search.html"><i class="fas fa-search"></i></a>
+                <a href="wishlist.html">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count" id="wishlist-count">0</span>
+                </a>
+                <a href="cart.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="account.html"><i class="far fa-user"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Хлебные крошки -->
+        <div class="breadcrumbs">
+            <a href="index.html">Главная</a> / <span>Доставка и оплата</span>
+        </div>
+
+        <h1 class="page-title">Доставка и оплата</h1>
+
+        <!-- Основные способы доставки -->
+        <div class="delivery-grid">
+            <div class="delivery-card">
+                <div class="delivery-icon"><i class="fas fa-rocket"></i></div>
+                <h2>Курьерская доставка</h2>
+                <p><strong>По Минску:</strong> 5 BYN (бесплатно при заказе от 500 BYN)</p>
+                <p><strong>По Беларуси:</strong> 10-15 BYN (бесплатно при заказе от 800 BYN)</p>
+                <h3>Сроки доставки:</h3>
+                <ul>
+                    <li><i class="fas fa-clock"></i> Минск: сегодня-завтра</li>
+                    <li><i class="fas fa-clock"></i> Областные центры: 1-2 дня</li>
+                    <li><i class="fas fa-clock"></i> Районные центры: 2-3 дня</li>
+                </ul>
+                <p style="margin-top:15px;">Курьер предварительно свяжется с вами для подтверждения времени доставки. Оплата наличными или картой курьеру.</p>
+            </div>
+
+            <div class="delivery-card">
+                <div class="delivery-icon"><i class="fas fa-store"></i></div>
+                <h2>Самовывоз</h2>
+                <p><strong>Адрес пункта выдачи:</strong> г. Минск, ул. Интернетная, 1 (ст. м. "Немига")</p>
+                <p><strong>Режим работы:</strong> Пн-Пт 10:00-21:00, Сб-Вс 10:00-18:00</p>
+                <h3>Преимущества самовывоза:</h3>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Бесплатно</li>
+                    <li><i class="fas fa-check-circle"></i> Можно проверить товар перед оплатой</li>
+                    <li><i class="fas fa-check-circle"></i> Поможем с настройкой</li>
+                </ul>
+                <p style="margin-top:15px;">Заказ будет храниться в пункте выдачи 5 рабочих дней.</p>
+            </div>
+
+            <div class="delivery-card">
+                <div class="delivery-icon"><i class="fas fa-box-open"></i></div>
+                <h2>Почта / Постаматы</h2>
+                <p><strong>Белпочта:</strong> от 7 BYN</p>
+                <p><strong>Европочта:</strong> от 8 BYN</p>
+                <p><strong>Постаматы (постаматы.бел):</strong> 5 BYN</p>
+                <h3>Сроки доставки:</h3>
+                <ul>
+                    <li><i class="fas fa-clock"></i> Почтовая доставка: 3-7 дней</li>
+                    <li><i class="fas fa-clock"></i> Постаматы: 2-4 дня</li>
+                </ul>
+                <p style="margin-top:15px;">После отправки заказа вы получите SMS с трек-номером для отслеживания.</p>
+            </div>
+        </div>
+
+        <!-- Способы оплаты (таблица) -->
+        <h2 class="section-title" style="margin:40px 0 20px;">Способы оплаты</h2>
+        <table class="payment-table">
+            <tr>
+                <th>Способ оплаты</th>
+                <th>Комиссия</th>
+                <th>Время зачисления</th>
+            </tr>
+            <tr>
+                <td><i class="fas fa-credit-card"></i> Банковской картой онлайн (Visa, MasterCard, Белкарт)</td>
+                <td>0%</td>
+                <td>Мгновенно</td>
+            </tr>
+            <tr>
+                <td><i class="fas fa-money-bill-wave"></i> Наличными курьеру</td>
+                <td>0%</td>
+                <td>При получении</td>
+            </tr>
+            <tr>
+                <td><i class="fas fa-credit-card"></i> Картами рассрочки: Халва, Карта Покупок, Магнит</td>
+                <td>0%</td>
+                <td>Мгновенно</td>
+            </tr>
+            <tr>
+                <td><i class="fas fa-university"></i> Наличными в банке (для юрлиц)</td>
+                <td>0%</td>
+                <td>1-2 дня</td>
+            </tr>
+            <tr>
+                <td><i class="fas fa-mobile-alt"></i> Оплата через ЕРИП</td>
+                <td>0%</td>
+                <td>до 24 часов</td>
+            </tr>
+        </table>
+
+        <!-- Важная информация -->
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Важная информация о доставке</h3>
+            <p><i class="fas fa-check"></i> Доставка осуществляется ежедневно с 10:00 до 22:00.</p>
+            <p><i class="fas fa-check"></i> При курьерской доставке вы можете вскрыть упаковку и проверить товар перед оплатой.</p>
+            <p><i class="fas fa-check"></i> В отдалённые населённые пункты срок доставки может быть увеличен до 5 рабочих дней.</p>
+            <p><i class="fas fa-check"></i> Для юридических лиц предоставляем все закрывающие документы (ТТН, счёт-фактура).</p>
+            <p><i class="fas fa-gift"></i> При заказе от 1000 BYN — бесплатная доставка и фирменный чехол в подарок!</p>
+        </div>
+
+        <!-- Гарантия и возврат (с якорем) -->
+        <div id="returns">
+            <h2 class="section-title" style="margin:40px 0 20px;">Гарантия и возврат</h2>
+            <div class="delivery-grid" style="margin-bottom:30px;">
+                <div class="delivery-card">
+                    <div class="delivery-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Гарантия</h3>
+                    <p>Все товары, представленные в нашем магазине, имеют официальную гарантию производителя:</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Apple — 1 год</li>
+                        <li><i class="fas fa-check"></i> Samsung — 2 года</li>
+                        <li><i class="fas fa-check"></i> Huawei — 1 год</li>
+                        <li><i class="fas fa-check"></i> Xiaomi — 1 год</li>
+                        <li><i class="fas fa-check"></i> Другие бренды — 1 год</li>
+                    </ul>
+                </div>
+                <div class="delivery-card">
+                    <div class="delivery-icon"><i class="fas fa-undo-alt"></i></div>
+                    <h3>Возврат</h3>
+                    <p>Вы можете вернуть товар в течение 14 дней с момента покупки, если:</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Товар не использовался</li>
+                        <li><i class="fas fa-check"></i> Сохранена упаковка и все пломбы</li>
+                        <li><i class="fas fa-check"></i> Есть чек или другой подтверждающий документ</li>
+                    </ul>
+                    <p style="margin-top:15px;">Для возврата заполните заявление в пункте самовывоза или свяжитесь с нами.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Часто задаваемые вопросы (FAQ) с якорем -->
+        <div id="faq-section">
+            <h2 class="section-title" style="margin:40px 0 20px;">Часто задаваемые вопросы</h2>
+            <div class="faq-section">
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        Сколько времени занимает доставка в регионы?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" style="display:block;">
+                        В областные центры доставка занимает 1-2 дня, в районные центры и малые города — 2-4 дня. Точную стоимость и сроки вы можете узнать при оформлении заказа.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Могу ли я оплатить заказ картой при получении?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Да, у курьеров есть переносные терминалы для оплаты картами Visa, MasterCard и Белкарт. Также вы можете оплатить картой в пункте самовывоза.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Как отследить мой заказ?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        После отправки заказа мы пришлём SMS с трек-номером на ваш телефон. Отслеживать можно на сайте почтовой службы или в личном кабинете на нашем сайте.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Что делать, если товар не подошёл?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Вы можете вернуть товар в течение 14 дней. Для этого свяжитесь с нами по телефону +375 29 123-45-67 или придите в пункт самовывоза. Деньги будут возвращены тем же способом, которым производилась оплата.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопка для перехода к каталогу -->
+        <div style="text-align:center; margin:50px 0;">
+            <a href="catalog.html" class="btn">Перейти к покупкам</a>
+        </div>
+    </div>
+
+    <!-- УНИФИЦИРОВАННЫЙ ПОДВАЛ (как на всех страницах) -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>TabMarket</h4>
+                <p>Специализированный магазин планшетов</p>
+            </div>
+            <div class="footer-col">
+                <h4>Информация</h4>
+                <a href="about.html">О компании</a>
+                <a href="delivery.html">Доставка</a>
+                <a href="contacts.html">Контакты</a>
+            </div>
+            <div class="footer-col">
+                <h4>Помощь</h4>
+                <a href="delivery.html#faq-section">Вопрос-ответ</a>
+                <a href="delivery.html#returns">Возврат</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-phone"></i> +375 29 123-45-67</p>
+                <p><i class="fas fa-envelope"></i> info@tabmarket.by</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Обновление счётчиков корзины и избранного
+        function updateCounters() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('cart-count').innerText = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        }
+
+        // Аккордеон для FAQ
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const item = this.closest('.faq-item');
+                item.classList.toggle('active');
+            });
+        });
+
+        // Проверяем, есть ли хэш в URL, и открываем соответствующий FAQ
+        window.addEventListener('load', () => {
+            updateCounters();
+            if (window.location.hash === '#faq-section') {
+                setTimeout(() => {
+                    document.getElementById('faq-section').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+            if (window.location.hash === '#returns') {
+                setTimeout(() => {
+                    document.getElementById('returns').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
